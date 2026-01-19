@@ -1,0 +1,632 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #64748b;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --background: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --recording: #ef4444;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.app-header {
+    background: linear-gradient(135deg, #1a365d 0%, #2563eb 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.app-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.app-header .subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    flex: 1;
+    padding: 20px;
+    flex-direction: column;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Cards */
+.card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.card p {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.info-box {
+    background: var(--background);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.info-box p {
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-primary:disabled {
+    background: var(--secondary);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-large {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+}
+
+.btn-icon {
+    font-size: 20px;
+}
+
+/* Progress bar */
+.progress-bar {
+    background: var(--border);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    background: var(--primary);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Question card */
+.question-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    flex: 1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.question-text {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.question-hint {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+/* Choice options */
+.choice-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.choice-options.hidden {
+    display: none;
+}
+
+.choice-btn {
+    background: var(--background);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.choice-btn:hover {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.choice-btn.selected {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.choice-btn.selected::before {
+    content: "✓ ";
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* Text input box */
+.text-input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.text-input-box.hidden {
+    display: none;
+}
+
+.text-input {
+    flex: 1;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.text-input:focus {
+    border-color: var(--primary);
+}
+
+.text-input::placeholder {
+    color: var(--text-light);
+}
+
+/* Transcript box */
+.transcript-box {
+    background: var(--background);
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 80px;
+    margin-bottom: 16px;
+}
+
+.transcript-box.hidden {
+    display: none;
+}
+
+.transcript-interim {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.transcript-final {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Answer display */
+.answer-display {
+    background: #dcfce7;
+    border-radius: 12px;
+    padding: 16px;
+    border: 2px solid var(--success);
+}
+
+.answer-display.hidden {
+    display: none;
+}
+
+.answer-label {
+    font-size: 12px;
+    color: var(--success);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.confirmed-answer {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Microphone button */
+.voice-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.voice-controls.hidden {
+    display: none;
+}
+
+.mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+.mic-btn:hover {
+    transform: scale(1.05);
+}
+
+.mic-btn.recording {
+    background: var(--recording);
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.mic-status {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.mic-status.recording {
+    color: var(--recording);
+    font-weight: 600;
+}
+
+/* Navigation buttons */
+.nav-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-buttons .btn {
+    flex: 1;
+}
+
+/* Minimal navigation for conversation mode */
+.nav-minimal {
+    justify-content: space-between;
+    margin-top: 20px;
+    opacity: 0.6;
+}
+
+.nav-minimal:hover {
+    opacity: 1;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 16px;
+}
+
+.btn-link:hover {
+    color: var(--primary);
+}
+
+.btn-link:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Review screen */
+.answers-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.answer-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.answer-item:last-child {
+    border-bottom: none;
+}
+
+.answer-item .question {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.answer-item .answer {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Complete screen */
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--success);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 20px;
+}
+
+.instruction {
+    margin: 16px 0 8px;
+    font-size: 14px;
+}
+
+.command {
+    display: block;
+    background: #1e293b;
+    color: #22d3ee;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: white;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+.toast.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+.toast.error {
+    background: var(--danger);
+}
+
+/* Mobile adjustments */
+@media (max-width: 380px) {
+    .question-text {
+        font-size: 18px;
+    }
+
+    .mic-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+}
+
+/* Safe area for notched phones */
+@supports (padding: max(0px)) {
+    .app-header {
+        padding-top: max(20px, env(safe-area-inset-top));
+    }
+
+    .nav-buttons {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Review Modal */
+.review-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.review-content {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.review-content h2 {
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.review-summary {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.issue-item {
+    background: var(--background);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid var(--secondary);
+}
+
+.issue-item.error {
+    border-left-color: var(--danger);
+    background: #fef2f2;
+}
+
+.issue-item.warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.issue-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.issue-severity {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.issue-item.error .issue-severity {
+    background: var(--danger);
+    color: white;
+}
+
+.issue-item.warning .issue-severity {
+    background: #f59e0b;
+    color: white;
+}
+
+.issue-field {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.issue-description {
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.issue-suggestion {
+    font-size: 13px;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.review-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.review-actions .btn {
+    flex: 1;
+    padding: 14px 16px;
+}
+
+.review-actions .btn.secondary {
+    background: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.review-actions .btn.primary {
+    background: var(--primary);
+    color: white;
+}

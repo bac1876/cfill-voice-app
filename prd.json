@@ -1,0 +1,622 @@
+{
+  "name": "Arkansas Real Estate Contract Auto-Filler",
+  "version": "1.0.0",
+  "description": "Automated tool to log into Form Simplicity, fill out the Arkansas Real Estate Contract (Residential), and save the completed contract",
+  "status": "planning",
+  "created": "2026-01-12",
+  "updated": "2026-01-12",
+
+  "platform": {
+    "url": "https://ara.formsimplicity.com",
+    "name": "Form Simplicity - Arkansas REALTORS Association",
+    "form": "Real Estate Contract (Residential)",
+    "pages": 18
+  },
+
+  "credentials": {
+    "username": "11621010",
+    "password": "lbbc2245",
+    "note": "Development credentials - move to .env before production"
+  },
+
+  "tech_stack": {
+    "automation": "Playwright",
+    "language": "Node.js",
+    "data_source": "Google Sheets API",
+    "config": ".env file"
+  },
+
+  "discovered_selectors": {
+    "login": {
+      "username_field": "input[type=\"text\"]",
+      "password_field": "input[type=\"password\"]",
+      "submit_button": "button[type=\"submit\"]",
+      "success_url": "/users/started"
+    },
+    "forms_library": {
+      "url": "https://ara.formsimplicity.com/formslibrary/formslibrary",
+      "contract_link": "a[data-form-id=\"60014\"]",
+      "contract_name": "Real Estate Contract Residential"
+    },
+    "form_fields": {
+      "property_address": "input[name=\"Global_Info-Property-Location-Address-Full_66\"]",
+      "buyer_name": "input[name=\"Global_Info-Buyer-Entity-Name_67\"]",
+      "sale_price": "input[name=\"Global_Info-Sale-Price-Amount_68\"]",
+      "legal_description": "textarea[name=\"Global_Info-Property-Legal-Description-Full_35\"]"
+    },
+    "save_dialog": {
+      "save_form_link": "a:has-text(\"Save Form\")",
+      "new_transaction_label": "label:has-text(\"New transaction\")",
+      "street_address": "input[name=\"address\"]",
+      "same_as_address": "label:has-text(\"Same as\")",
+      "property_type_dropdown": "select.property-type-select",
+      "transaction_type_dropdown": "select.transaction-type-select",
+      "save_submit_button": "button:has-text(\"Save & Submit Form\")"
+    },
+    "dropdown_values": {
+      "property_type": {
+        "R": "Residential",
+        "C": "Commercial",
+        "L": "Land"
+      },
+      "transaction_type": {
+        "P": "Purchase",
+        "L": "Listing",
+        "G": "Listing & Purchase"
+      }
+    }
+  },
+
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Discovery & Setup",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "T001",
+          "name": "Analyze PDF contract structure",
+          "status": "completed",
+          "description": "Review the 18-page PDF contract to identify all fillable fields"
+        },
+        {
+          "id": "T002",
+          "name": "Identify all form fields",
+          "status": "completed",
+          "description": "Document all 87 form fields with types and options",
+          "output": "87 fields identified across 25 sections"
+        },
+        {
+          "id": "T003",
+          "name": "Create data collection form",
+          "status": "completed",
+          "description": "Build HTML form to collect contract data",
+          "output": "contract-form.html, contract-form-test.html"
+        },
+        {
+          "id": "T004",
+          "name": "Set up Google Sheets integration",
+          "status": "completed",
+          "description": "Create Apps Script backend for data storage",
+          "output": "google-apps-script.js"
+        },
+        {
+          "id": "T005",
+          "name": "Create test form with dummy data",
+          "status": "completed",
+          "description": "Pre-filled form for testing automation",
+          "output": "contract-form-test.html"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Authentication",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "T006",
+          "name": "Inspect Form Simplicity login page",
+          "status": "completed",
+          "description": "Use Playwright to navigate to login page and identify form selectors",
+          "acceptance_criteria": [
+            "Identify username field selector",
+            "Identify password field selector",
+            "Identify submit button selector",
+            "Document any CAPTCHA or 2FA requirements"
+          ]
+        },
+        {
+          "id": "T007",
+          "name": "Implement login automation",
+          "status": "completed",
+          "description": "Create auth.js module to handle login",
+          "acceptance_criteria": [
+            "Navigate to login URL",
+            "Enter username",
+            "Enter password",
+            "Click submit",
+            "Verify successful login"
+          ]
+        },
+        {
+          "id": "T008",
+          "name": "Handle login errors",
+          "status": "pending",
+          "description": "Implement error handling for failed logins",
+          "acceptance_criteria": [
+            "Detect login failure",
+            "Retry once on failure",
+            "Alert user with clear error message"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Navigation",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "T009",
+          "name": "Map post-login navigation",
+          "status": "completed",
+          "description": "Document how to navigate from dashboard to contract form",
+          "acceptance_criteria": [
+            "Identify dashboard URL/state",
+            "Find path to create new contract",
+            "Document any menu clicks or form selections needed"
+          ]
+        },
+        {
+          "id": "T010",
+          "name": "Implement navigation module",
+          "status": "pending",
+          "description": "Create navigation.js to get from login to contract form",
+          "acceptance_criteria": [
+            "Navigate to contract creation",
+            "Select correct form type",
+            "Wait for form to fully load"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Form Field Mapping",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "T011",
+          "name": "Inspect form page 1-6 fields",
+          "status": "pending",
+          "description": "Map selectors for Parties, Property, Price, Agency, Costs, Earnest Money, Deposit, Title, Survey, Fixtures",
+          "fields": [
+            "buyer_names",
+            "seller_names",
+            "property_type",
+            "property_address",
+            "legal_description",
+            "purchase_method",
+            "purchase_price",
+            "loan_type",
+            "agency_type",
+            "closing_cost_terms",
+            "earnest_money_addendum",
+            "deposit_applicable",
+            "deposit_amount",
+            "title_insurance_option",
+            "survey_option",
+            "additional_fixtures",
+            "items_not_conveying"
+          ]
+        },
+        {
+          "id": "T012",
+          "name": "Inspect form page 7-12 fields",
+          "status": "pending",
+          "description": "Map selectors for Contingency, Warranty, Inspection, HOA, Disclosure, Termite, Lead Paint, Closing",
+          "fields": [
+            "has_contingency",
+            "contingency_description",
+            "home_warranty_option",
+            "warranty_company",
+            "warranty_plan",
+            "inspection_option",
+            "has_hoa",
+            "disclosure_option",
+            "termite_option",
+            "lead_paint_option",
+            "closing_date"
+          ]
+        },
+        {
+          "id": "T013",
+          "name": "Inspect form page 13-18 fields",
+          "status": "pending",
+          "description": "Map selectors for Possession, Other, Licensee, Expiration, Signatures, Broker info",
+          "fields": [
+            "possession_option",
+            "other_provisions",
+            "licensee_disclosure",
+            "expiration_date",
+            "expiration_time",
+            "buyer1_name",
+            "seller1_name",
+            "selling_firm",
+            "selling_agent_name",
+            "listing_firm",
+            "listing_agent_name"
+          ]
+        },
+        {
+          "id": "T014",
+          "name": "Create field mappings config",
+          "status": "pending",
+          "description": "Create fieldMappings.json with all selector mappings",
+          "output": "config/fieldMappings.json"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Form Filling",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "T015",
+          "name": "Implement text field handler",
+          "status": "pending",
+          "description": "Function to fill text input fields"
+        },
+        {
+          "id": "T016",
+          "name": "Implement select/dropdown handler",
+          "status": "pending",
+          "description": "Function to select dropdown options"
+        },
+        {
+          "id": "T017",
+          "name": "Implement checkbox handler",
+          "status": "pending",
+          "description": "Function to check/uncheck checkboxes"
+        },
+        {
+          "id": "T018",
+          "name": "Implement radio button handler",
+          "status": "pending",
+          "description": "Function to select radio button options"
+        },
+        {
+          "id": "T019",
+          "name": "Implement date picker handler",
+          "status": "pending",
+          "description": "Function to fill date fields"
+        },
+        {
+          "id": "T020",
+          "name": "Implement multi-page navigation",
+          "status": "pending",
+          "description": "Handle next/previous page buttons in form"
+        },
+        {
+          "id": "T021",
+          "name": "Create formFiller.js module",
+          "status": "pending",
+          "description": "Main module that orchestrates all field filling",
+          "output": "src/formFiller.js"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Data Integration",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "T022",
+          "name": "Implement Google Sheets reader",
+          "status": "pending",
+          "description": "Read contract data from Google Sheet row",
+          "output": "src/dataSources.js"
+        },
+        {
+          "id": "T023",
+          "name": "Implement data transformation",
+          "status": "pending",
+          "description": "Transform Google Sheet data to match form field requirements"
+        },
+        {
+          "id": "T024",
+          "name": "Handle empty/null values",
+          "status": "pending",
+          "description": "Skip fields gracefully when data is missing"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Save & Verify",
+      "status": "completed",
+      "tasks": [
+        {
+          "id": "T025",
+          "name": "Implement save functionality",
+          "status": "completed",
+          "description": "Click save button after form is filled"
+        },
+        {
+          "id": "T026",
+          "name": "Verify save success",
+          "status": "completed",
+          "description": "Confirm contract was saved successfully"
+        },
+        {
+          "id": "T027",
+          "name": "Capture contract reference",
+          "status": "pending",
+          "description": "Log or store the saved contract ID"
+        },
+        {
+          "id": "T028",
+          "name": "Update Google Sheet status",
+          "status": "pending",
+          "description": "Mark row as 'Filled' in Google Sheet"
+        }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "name": "Error Handling & Polish",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "T029",
+          "name": "Add comprehensive logging",
+          "status": "pending",
+          "description": "Log all actions with timestamps"
+        },
+        {
+          "id": "T030",
+          "name": "Add screenshot on error",
+          "status": "pending",
+          "description": "Capture screenshot when errors occur"
+        },
+        {
+          "id": "T031",
+          "name": "Implement retry logic",
+          "status": "pending",
+          "description": "Retry failed operations"
+        },
+        {
+          "id": "T032",
+          "name": "Create main.js entry point",
+          "status": "pending",
+          "description": "CLI entry point to run the automation",
+          "output": "src/main.js"
+        },
+        {
+          "id": "T033",
+          "name": "Write README documentation",
+          "status": "pending",
+          "description": "Usage instructions and setup guide"
+        }
+      ]
+    }
+  ],
+
+  "field_mappings": {
+    "total_fields": 87,
+    "sections": [
+      {
+        "name": "Parties & Property",
+        "fields": ["buyer_names", "seller_names", "property_type", "property_address", "legal_description"]
+      },
+      {
+        "name": "Purchase Price & Financing",
+        "fields": ["purchase_method", "purchase_price", "loan_type", "other_financing_details", "fha_min_appraised_value", "seller_loan_cost_limit"]
+      },
+      {
+        "name": "Agency",
+        "fields": ["agency_type"]
+      },
+      {
+        "name": "Closing Costs",
+        "fields": ["closing_cost_terms"]
+      },
+      {
+        "name": "Earnest Money",
+        "fields": ["earnest_money_addendum"]
+      },
+      {
+        "name": "Non-Refundable Deposit",
+        "fields": ["deposit_applicable", "deposit_amount", "deposit_timing_type", "deposit_days_after_signing"]
+      },
+      {
+        "name": "Title Insurance",
+        "fields": ["title_insurance_option", "title_insurance_other"]
+      },
+      {
+        "name": "Survey",
+        "fields": ["survey_option", "survey_paid_by", "survey_other"]
+      },
+      {
+        "name": "Fixtures",
+        "fields": ["additional_fixtures", "items_not_conveying"]
+      },
+      {
+        "name": "Contingency",
+        "fields": ["has_contingency", "contingency_description", "contingency_deadline", "escape_clause_type", "hours_to_remove_contingency"]
+      },
+      {
+        "name": "Home Warranty",
+        "fields": ["home_warranty_option", "warranty_company", "warranty_plan", "warranty_paid_by", "warranty_cost_limit"]
+      },
+      {
+        "name": "Inspection",
+        "fields": ["inspection_option"]
+      },
+      {
+        "name": "HOA",
+        "fields": ["has_hoa", "hoa_addendum"]
+      },
+      {
+        "name": "Seller Disclosure",
+        "fields": ["disclosure_option"]
+      },
+      {
+        "name": "Termite",
+        "fields": ["termite_option", "termite_other"]
+      },
+      {
+        "name": "Lead Paint",
+        "fields": ["lead_paint_option"]
+      },
+      {
+        "name": "Closing",
+        "fields": ["closing_date"]
+      },
+      {
+        "name": "Possession",
+        "fields": ["possession_option"]
+      },
+      {
+        "name": "Other Provisions",
+        "fields": ["other_provisions"]
+      },
+      {
+        "name": "Licensee Disclosure",
+        "fields": ["licensee_disclosure", "licensed_party_role"]
+      },
+      {
+        "name": "Expiration",
+        "fields": ["expiration_date", "expiration_time"]
+      },
+      {
+        "name": "Buyer Signatures",
+        "fields": ["buyer1_name", "buyer1_datetime", "buyer2_name", "buyer2_datetime"]
+      },
+      {
+        "name": "Seller Signatures",
+        "fields": ["seller1_name", "seller1_datetime", "seller2_name", "seller2_datetime", "contract_status"]
+      },
+      {
+        "name": "Selling Firm",
+        "fields": ["selling_firm", "selling_broker_name", "selling_broker_license", "selling_broker_email", "selling_agent_name", "selling_agent_license", "selling_agent_email", "selling_agent_cell"]
+      },
+      {
+        "name": "Listing Firm",
+        "fields": ["listing_firm", "listing_broker_name", "listing_broker_license", "listing_broker_email", "listing_agent_name", "listing_agent_license", "listing_agent_email", "listing_agent_cell"]
+      }
+    ]
+  },
+
+  "test_data": {
+    "buyer_names": "John Michael Smith and Sarah Jane Smith",
+    "seller_names": "Robert Allen Johnson and Mary Elizabeth Johnson",
+    "property_type": "Single Family",
+    "property_address": "1234 Maple Creek Drive, Rogers, AR 72758",
+    "legal_description": "Lot 15, Block 3, Maple Creek Estates Phase II, Benton County, Arkansas",
+    "purchase_method": "New Financing",
+    "purchase_price": "375000",
+    "loan_type": "Conventional",
+    "agency_type": "B",
+    "closing_cost_terms": "Seller agrees to pay up to 3% of purchase price toward Buyer's closing costs and prepaids.",
+    "earnest_money_addendum": "Yes",
+    "deposit_applicable": "No",
+    "title_insurance_option": "A",
+    "survey_option": "B",
+    "additional_fixtures": "Ring doorbell, Nest thermostat, all window blinds and curtain rods, basketball goal in driveway",
+    "items_not_conveying": "Refrigerator in garage, washer and dryer, shelving units in basement",
+    "has_contingency": "No",
+    "home_warranty_option": "B",
+    "warranty_company": "American Home Shield",
+    "warranty_plan": "ShieldGold",
+    "warranty_paid_by": "Seller",
+    "warranty_cost_limit": "550",
+    "inspection_option": "B",
+    "has_hoa": "Yes",
+    "hoa_addendum": "Yes",
+    "disclosure_option": "A",
+    "termite_option": "B",
+    "lead_paint_option": "A",
+    "closing_date": "2026-02-28",
+    "possession_option": "A",
+    "other_provisions": "Seller to have home professionally cleaned prior to closing. Seller to leave all garage door openers and house keys with listing agent at closing.",
+    "licensee_disclosure": "A",
+    "expiration_date": "2026-01-20",
+    "expiration_time": "17:00",
+    "buyer1_name": "John Michael Smith",
+    "buyer2_name": "Sarah Jane Smith",
+    "seller1_name": "Robert Allen Johnson",
+    "seller2_name": "Mary Elizabeth Johnson",
+    "contract_status": "Accepted",
+    "selling_firm": "Keller Williams Market Pro Realty",
+    "selling_broker_name": "Thomas Anderson",
+    "selling_broker_license": "PB00012345",
+    "selling_agent_name": "Brian Curtis",
+    "selling_agent_license": "SA00067890",
+    "selling_agent_email": "brian@searchnwa.com",
+    "selling_agent_cell": "479-555-1234",
+    "listing_firm": "Coldwell Banker Harris McHaney & Faucette",
+    "listing_broker_name": "Jennifer Williams",
+    "listing_broker_license": "PB00054321",
+    "listing_agent_name": "Amanda Roberts",
+    "listing_agent_license": "SA00098765",
+    "listing_agent_email": "aroberts@cbhmf.com",
+    "listing_agent_cell": "479-555-9876"
+  },
+
+  "success_metrics": {
+    "login_success_rate": "99%",
+    "field_fill_accuracy": "100%",
+    "end_to_end_completion": "95%",
+    "time_to_fill": "< 60 seconds"
+  },
+
+  "risks": [
+    {
+      "risk": "Form Simplicity UI changes",
+      "impact": "High",
+      "mitigation": "Use robust selectors, add monitoring"
+    },
+    {
+      "risk": "CAPTCHA on login",
+      "impact": "High",
+      "mitigation": "Alert user for manual intervention"
+    },
+    {
+      "risk": "Rate limiting",
+      "impact": "Medium",
+      "mitigation": "Add delays between actions"
+    },
+    {
+      "risk": "Session timeouts",
+      "impact": "Medium",
+      "mitigation": "Implement re-authentication"
+    }
+  ],
+
+  "files": {
+    "created": [
+      "contract-form.html",
+      "contract-form-test.html",
+      "google-apps-script.js",
+      "PRD-Contract-Filler.md",
+      "SETUP-GUIDE.md",
+      "prd.json"
+    ],
+    "to_create": [
+      "src/main.js",
+      "src/auth.js",
+      "src/navigation.js",
+      "src/formFiller.js",
+      "src/dataSources.js",
+      "config/fieldMappings.json",
+      "config/selectors.json",
+      ".env",
+      "package.json",
+      "README.md"
+    ]
+  }
+}

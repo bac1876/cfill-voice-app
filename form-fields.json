@@ -1,0 +1,380 @@
+{
+  "inputs": [
+    {
+      "name": "serial_2xfa[0].form[0].Ultra_Form[0].Master_Page[0]PageArea1_12",
+      "id": "",
+      "placeholder": "",
+      "value": "020925-500176-8251508",
+      "title": "",
+      "className": "__H",
+      "visible": true
+    },
+    {
+      "name": "preparer_infoxfa[0].form[0].Ultra_Form[0].Master_Page[0]PageArea1_13",
+      "id": "",
+      "placeholder": "",
+      "value": "Brian Curtis  |  KW Market Pro Realty - Rogers  |  brian@searchnwa.com  |  ",
+      "title": "",
+      "className": "__I",
+      "visible": true
+    },
+    {
+      "name": "tbd14_38",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "folder_id_40",
+      "id": "",
+      "placeholder": "",
+      "value": "0",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd4_41",
+      "id": "",
+      "placeholder": "",
+      "value": "test tbd4",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd3_42",
+      "id": "",
+      "placeholder": "",
+      "value": "61488372",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd2_43",
+      "id": "",
+      "placeholder": "",
+      "value": "AR",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd1_44",
+      "id": "",
+      "placeholder": "",
+      "value": "false",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "forms_package_id_45",
+      "id": "",
+      "placeholder": "",
+      "value": "0",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "last_clicked_field_46",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "security_key_47",
+      "id": "",
+      "placeholder": "",
+      "value": "0",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "file_id_48",
+      "id": "",
+      "placeholder": "",
+      "value": "60014",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd12_50",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd11_51",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd10_52",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd9_53",
+      "id": "",
+      "placeholder": "",
+      "value": "Java/1.8.0_461",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd8_54",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd7_55",
+      "id": "",
+      "placeholder": "",
+      "value": "Brian Curtis  |  KW Market Pro Realty - Rogers  |  brian@searchnwa.com  |  ",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd6_56",
+      "id": "",
+      "placeholder": "",
+      "value": "020925-500176-8251508",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd5_57",
+      "id": "",
+      "placeholder": "",
+      "value": "false",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "serial_number_65",
+      "id": "",
+      "placeholder": "",
+      "value": "020925-500176-8251508",
+      "title": "",
+      "className": "__W",
+      "visible": true
+    },
+    {
+      "name": "Global_Info-Property-Location-Address-Full_66",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__W",
+      "visible": true
+    },
+    {
+      "name": "Global_Info-Buyer-Entity-Name_67",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__X",
+      "visible": true
+    },
+    {
+      "name": "Global_Info-Sale-Price-Amount_68",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__Y",
+      "visible": true
+    },
+    {
+      "name": "p01tf001_69",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__X",
+      "visible": true
+    },
+    {
+      "name": "p01tf003_70",
+      "id": "",
+      "placeholder": "",
+      "value": "",
+      "title": "",
+      "className": "__Y",
+      "visible": true
+    }
+  ],
+  "textareas": [
+    {
+      "name": "Global_Info-Property-Legal-Description-Full_35",
+      "id": "",
+      "placeholder": "",
+      "title": "",
+      "className": "__S",
+      "visible": true
+    },
+    {
+      "name": "p01tf002_36",
+      "id": "",
+      "placeholder": "",
+      "title": "",
+      "className": "__S",
+      "visible": true
+    },
+    {
+      "name": "clauses_39",
+      "id": "",
+      "placeholder": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    },
+    {
+      "name": "tbd13_49",
+      "id": "",
+      "placeholder": "",
+      "title": "",
+      "className": "__T",
+      "visible": true
+    }
+  ],
+  "selects": [],
+  "checkboxes": [
+    {
+      "name": "p01cb001_71",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb002_72",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb003_73",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb004_74",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb005_75",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb006_76",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb007_77",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb008_78",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb009_79",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb010_80",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb011_81",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb012_82",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb013_83",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb014_84",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    },
+    {
+      "name": "p01cb015_85",
+      "id": "",
+      "value": "0",
+      "title": "",
+      "visible": true
+    }
+  ]
+}

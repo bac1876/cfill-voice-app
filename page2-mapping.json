@@ -1,0 +1,367 @@
+{
+  "checkboxes": [
+    {
+      "name": "check_acct_status",
+      "y": 0
+    },
+    {
+      "name": "check_acct_status",
+      "y": 0
+    },
+    {
+      "name": "Global_info-Invisibind-AddSigPG_59",
+      "y": 0
+    },
+    {
+      "name": "includeRentSpree",
+      "y": 0
+    },
+    {
+      "name": "lock",
+      "y": 0
+    },
+    {
+      "name": "p01cb001_71",
+      "y": 570.34375
+    },
+    {
+      "name": "p01cb002_72",
+      "y": 570.34375
+    },
+    {
+      "name": "p01cb003_73",
+      "y": 617.859375
+    },
+    {
+      "name": "p01cb004_74",
+      "y": 668.25
+    },
+    {
+      "name": "p01cb005_75",
+      "y": 668.25
+    },
+    {
+      "name": "p01cb006_76",
+      "y": 1011.828125
+    },
+    {
+      "name": "p01cb007_77",
+      "y": 1533.828125
+    },
+    {
+      "name": "p01cb008_78",
+      "y": 1577.03125
+    },
+    {
+      "name": "p01cb009_79",
+      "y": 1209.828125
+    },
+    {
+      "name": "p01cb010_80",
+      "y": 1256.625
+    },
+    {
+      "name": "p01cb011_81",
+      "y": 1307.03125
+    },
+    {
+      "name": "p01cb012_82",
+      "y": 1353.828125
+    },
+    {
+      "name": "p01cb013_83",
+      "y": 1400.625
+    },
+    {
+      "name": "p01cb014_84",
+      "y": 1353.828125
+    },
+    {
+      "name": "p01cb015_85",
+      "y": 1353.828125
+    },
+    {
+      "name": "p02cb001_98",
+      "y": 2062.234375
+    },
+    {
+      "name": "p02cb002_99",
+      "y": 2518.71875
+    },
+    {
+      "name": "p02cb003_100",
+      "y": 3009.75
+    },
+    {
+      "name": "save_dropbox",
+      "y": 0
+    },
+    {
+      "name": "save_google_drive",
+      "y": 0
+    },
+    {
+      "name": "save_local",
+      "y": 0
+    },
+    {
+      "name": "zip",
+      "y": 0
+    }
+  ],
+  "textFields": [
+    {
+      "name": "hotKeyCommand",
+      "y": -999
+    },
+    {
+      "name": "address",
+      "y": 0
+    },
+    {
+      "name": "folder_name",
+      "y": 0
+    },
+    {
+      "name": "address",
+      "y": 0
+    },
+    {
+      "name": "tax_parcel_id",
+      "y": 0
+    },
+    {
+      "name": "tax_house_number",
+      "y": 0
+    },
+    {
+      "name": "tax_street_name",
+      "y": 0
+    },
+    {
+      "name": "tax_street_type",
+      "y": 0
+    },
+    {
+      "name": "tax_street_dir",
+      "y": 0
+    },
+    {
+      "name": "tax_street_unit",
+      "y": 0
+    },
+    {
+      "name": "tax_data_city",
+      "y": 0
+    },
+    {
+      "name": "tax_data_zip",
+      "y": 0
+    },
+    {
+      "name": "tax_data_city",
+      "y": 0
+    },
+    {
+      "name": "tax_parcel_id",
+      "y": 0
+    },
+    {
+      "name": "tax_house_number",
+      "y": 0
+    },
+    {
+      "name": "tax_street_name",
+      "y": 0
+    },
+    {
+      "name": "tax_street_type",
+      "y": 0
+    },
+    {
+      "name": "tax_street_dir",
+      "y": 0
+    },
+    {
+      "name": "tax_street_unit",
+      "y": 0
+    },
+    {
+      "name": "tax_data_city",
+      "y": 0
+    },
+    {
+      "name": "tax_data_zip",
+      "y": 0
+    },
+    {
+      "name": "esignuseremail",
+      "y": 0
+    },
+    {
+      "name": "fax_recipient",
+      "y": 0
+    },
+    {
+      "name": "folder_name",
+      "y": 0
+    },
+    {
+      "name": "address",
+      "y": 0
+    },
+    {
+      "name": "street_address",
+      "y": 0
+    },
+    {
+      "name": "city",
+      "y": 0
+    },
+    {
+      "name": "zip_code",
+      "y": 0
+    },
+    {
+      "name": "street_address",
+      "y": 0
+    },
+    {
+      "name": "city",
+      "y": 0
+    },
+    {
+      "name": "zip_code",
+      "y": 0
+    },
+    {
+      "name": "first_name",
+      "y": 0
+    },
+    {
+      "name": "last_name123",
+      "y": 0
+    },
+    {
+      "name": "email123",
+      "y": 0
+    },
+    {
+      "name": "first_name",
+      "y": 0
+    },
+    {
+      "name": "last_name123",
+      "y": 0
+    },
+    {
+      "name": "email123",
+      "y": 0
+    },
+    {
+      "name": "folder_id_40",
+      "y": 150
+    },
+    {
+      "name": "tbd4_41",
+      "y": 150
+    },
+    {
+      "name": "tbd3_42",
+      "y": 150
+    },
+    {
+      "name": "tbd2_43",
+      "y": 150
+    },
+    {
+      "name": "tbd1_44",
+      "y": 150
+    },
+    {
+      "name": "forms_package_id_45",
+      "y": 150
+    },
+    {
+      "name": "last_clicked_field_46",
+      "y": 150
+    },
+    {
+      "name": "security_key_47",
+      "y": 150
+    },
+    {
+      "name": "file_id_48",
+      "y": 150
+    },
+    {
+      "name": "tbd14_38",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd12_50",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd11_51",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd10_52",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd9_53",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd8_54",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd7_55",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd6_56",
+      "y": 171.578125
+    },
+    {
+      "name": "tbd5_57",
+      "y": 171.578125
+    },
+    {
+      "name": "serial_number_65",
+      "y": 360.90625
+    },
+    {
+      "name": "Global_Info-Buyer-Entity-Name_67",
+      "y": 403.296875
+    },
+    {
+      "name": "p01tf001_69",
+      "y": 437.859375
+    },
+    {
+      "name": "Global_Info-Property-Location-Address-Full_66",
+      "y": 755.515625
+    },
+    {
+      "name": "Global_Info-Sale-Price-Amount_68",
+      "y": 1056.46875
+    },
+    {
+      "name": "p01tf003_70",
+      "y": 1574.875
+    },
+    {
+      "name": "serial_number_96",
+      "y": 1954.90625
+    },
+    {
+      "name": "p02tf001_97",
+      "y": 2685.75
+    }
+  ],
+  "newPageText": "Page 1 of 18"
+}

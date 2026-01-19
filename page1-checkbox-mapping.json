@@ -1,0 +1,107 @@
+{
+  "p01cb001_71": {
+    "label": "Single family detached home with land",
+    "position": {
+      "x": 353,
+      "y": 570
+    }
+  },
+  "p01cb002_72": {
+    "label": "One-to-four attached dwelling with land",
+    "position": {
+      "x": 786,
+      "y": 570
+    }
+  },
+  "p01cb003_73": {
+    "label": "Manufactured / Mobile Home with land",
+    "position": {
+      "x": 505,
+      "y": 618
+    }
+  },
+  "p01cb004_74": {
+    "label": "(Seller to provide FTC Insulation Requirement Addendum)",
+    "position": {
+      "x": 353,
+      "y": 668
+    }
+  },
+  "p01cb005_75": {
+    "label": "Condominium / Town Home",
+    "position": {
+      "x": 786,
+      "y": 668
+    }
+  },
+  "p01cb006_76": {
+    "label": "A.",
+    "position": {
+      "x": 153,
+      "y": 1012
+    }
+  },
+  "p01cb007_77": {
+    "label": "B.",
+    "position": {
+      "x": 153,
+      "y": 1534
+    }
+  },
+  "p01cb008_78": {
+    "label": "C.",
+    "position": {
+      "x": 153,
+      "y": 1577
+    }
+  },
+  "p01cb009_79": {
+    "label": "CONVENTIONAL.",
+    "position": {
+      "x": 189,
+      "y": 1210
+    }
+  },
+  "p01cb010_80": {
+    "label": "VA.",
+    "position": {
+      "x": 189,
+      "y": 1257
+    }
+  },
+  "p01cb011_81": {
+    "label": "FHA.",
+    "position": {
+      "x": 189,
+      "y": 1307
+    }
+  },
+  "p01cb012_82": {
+    "label": "USDA-RD.",
+    "position": {
+      "x": 189,
+      "y": 1354
+    }
+  },
+  "p01cb013_83": {
+    "label": "OTHER FINANCING:",
+    "position": {
+      "x": 189,
+      "y": 1401
+    }
+  },
+  "p01cb014_84": {
+    "label": "Direct",
+    "position": {
+      "x": 351,
+      "y": 1354
+    }
+  },
+  "p01cb015_85": {
+    "label": "Lender",
+    "position": {
+      "x": 574,
+      "y": 1354
+    }
+  }
+}

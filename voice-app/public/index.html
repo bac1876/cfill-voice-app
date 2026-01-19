@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a365d">
+    <meta name="description" content="Voice-driven Arkansas Real Estate Contract Filler">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CFill">
+
+    <title>CFill - Contract Filler</title>
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>CFill</h1>
+            <p class="subtitle">Voice Contract Filler</p>
+        </header>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="card">
+                <h2>Arkansas Real Estate Contract</h2>
+                <p>Answer questions by voice to automatically fill out your contract.</p>
+                <div class="info-box">
+                    <p><strong id="question-count">Loading...</strong> to complete the contract</p>
+                    <p>Estimated time: 5-10 minutes</p>
+                </div>
+                <button id="start-btn" class="btn btn-primary btn-large">
+                    Start Contract Fill
+                </button>
+            </div>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="screen">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <p id="progress-text" class="progress-text">Question 1 of 12</p>
+
+            <div class="question-card">
+                <h2 id="question-text" class="question-text">Loading...</h2>
+                <p id="question-hint" class="question-hint"></p>
+
+                <!-- Choice options (for choice questions) -->
+                <div id="choice-options" class="choice-options hidden">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Text input for typing answers (hidden in voice mode) -->
+                <div id="text-input-box" class="text-input-box hidden">
+                    <input type="text" id="text-input" class="text-input" placeholder="Type your answer here...">
+                    <button id="submit-text-btn" class="btn btn-secondary">Submit</button>
+                </div>
+
+                <!-- Transcript display (for voice mode) -->
+                <div id="transcript-box" class="transcript-box">
+                    <p id="transcript-interim" class="transcript-interim"></p>
+                    <p id="transcript-final" class="transcript-final"></p>
+                </div>
+
+                <!-- Answer confirmation -->
+                <div id="answer-display" class="answer-display hidden">
+                    <p class="answer-label">Your answer:</p>
+                    <p id="confirmed-answer" class="confirmed-answer"></p>
+                </div>
+            </div>
+
+            <!-- Voice controls - main interaction -->
+            <div class="voice-controls">
+                <button id="mic-btn" class="mic-btn">
+                    <span class="mic-icon">🎤</span>
+                </button>
+                <p id="mic-status" class="mic-status">Listening...</p>
+            </div>
+
+            <!-- Navigation - minimal, for manual override -->
+            <div class="nav-buttons nav-minimal">
+                <button id="back-btn" class="btn btn-link">← Back</button>
+                <button id="next-btn" class="btn btn-link" disabled>Skip →</button>
+            </div>
+        </div>
+
+        <!-- Review Screen -->
+        <div id="review-screen" class="screen">
+            <div class="card">
+                <h2>Review Your Answers</h2>
+                <div id="answers-list" class="answers-list">
+                    <!-- Populated dynamically -->
+                </div>
+                <div class="nav-buttons">
+                    <button id="edit-btn" class="btn btn-secondary">Edit Answers</button>
+                    <button id="submit-btn" class="btn btn-primary btn-large">
+                        Fill Contract
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Screen -->
+        <div id="complete-screen" class="screen">
+            <div class="card">
+                <div class="success-icon">&#10004;</div>
+                <h2>Answers Saved!</h2>
+                <p>Your contract answers have been saved.</p>
+                <p class="instruction">Run the fill script on your computer to complete the contract:</p>
+                <code class="command">node fill-from-voice.js</code>
+                <button id="restart-btn" class="btn btn-primary">Start New Contract</button>
+            </div>
+        </div>
+
+        <!-- Error/Status Toast -->
+        <div id="toast" class="toast hidden">
+            <p id="toast-message"></p>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

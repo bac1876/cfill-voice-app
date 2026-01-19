@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(node explore-formsimplicity.js:*)",
+      "Bash(node explore-new-transaction.js:*)",
+      "Bash(node:*)",
+      "Bash(claude plugins uninstall:*)",
+      "Bash(claude plugin uninstall:*)",
+      "WebSearch",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(cmd /c \"taskkill /F /PID 79724\")",
+      "Bash(powershell -Command \"Stop-Process -Id 79724 -Force\")",
+      "mcp__github__get_me",
+      "mcp__github__create_repository",
+      "Bash(git init:*)",
+      "Bash(git reset:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
+}

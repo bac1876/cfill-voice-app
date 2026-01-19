@@ -1,0 +1,306 @@
+{
+  "formInfo": {
+    "name": "Real Estate Contract (Residential)",
+    "formId": "60014",
+    "totalPages": 18,
+    "mappedAt": "2026-01-12T23:49:35.580Z",
+    "lastCorrected": "2026-01-12T23:49:35.581Z"
+  },
+  "pages": {
+    "page1": {
+      "pageNumber": 1,
+      "checkboxes": {
+        "p01cb001_71": "Single family detached home with land",
+        "p01cb002_72": "One-to-four attached dwelling with land",
+        "p01cb003_73": "Manufactured / Mobile Home with land",
+        "p01cb004_74": "Builder Owned older than 1 year",
+        "p01cb005_75": "Condominium / Town Home",
+        "p01cb006_76": "3A - PURCHASE PURSUANT TO NEW FINANCING",
+        "p01cb009_79": "CONVENTIONAL",
+        "p01cb010_80": "VA",
+        "p01cb011_81": "FHA",
+        "p01cb012_82": "USDA-RD",
+        "p01cb014_84": "Direct (under USDA-RD)",
+        "p01cb015_85": "Lender (under USDA-RD)",
+        "p01cb007_77": "3B - PURCHASE PURSUANT TO LOAN ASSUMPTION",
+        "p01cb008_78": "3C - PURCHASE PURSUANT TO CASH",
+        "p01cb013_83": "OTHER FINANCING"
+      },
+      "textFields": {
+        "p01tf001_69": "Date field (top)",
+        "p01tf003_70": "Additional notes/sum"
+      }
+    },
+    "page2": {
+      "pageNumber": 2,
+      "checkboxes": {
+        "p02cb001_98": "VA NOTICE TO BUYER acknowledgment (auto-check if VA loan)",
+        "p02cb002_99": "FHA NOTICE TO BUYER - Buyer received HUD-92564-CN (auto-check if FHA loan)",
+        "p02cb003_100": "Home inspection recommendation (ask user first)"
+      },
+      "textFields": {
+        "p02tf001_97": "FHA purchase price blank (auto-fill if FHA loan)"
+      },
+      "logic": {
+        "VA_loan": ["p02cb001_98"],
+        "FHA_loan": ["p02cb002_99", "p02tf001_97", "p02cb003_100"],
+        "non_FHA_ask_user": ["p02cb003_100"]
+      }
+    },
+    "page3": {
+      "pageNumber": 3,
+      "checkboxes": {
+        "p03cb001_120": "Agency A (not used)",
+        "p03cb002_121": "Agency B - NOT dual agency (check if not dual agency)",
+        "p03cb003_122": "Agency C - DUAL agency (check if dual agency)",
+        "p03cb004_123": "Agency D (not used)",
+        "p03cb005_124": "Agency E (not used)"
+      },
+      "textFields": {},
+      "logic": {
+        "question": "Is this dual agency?",
+        "yes": "p03cb003_122",
+        "no": "p03cb002_121"
+      }
+    },
+    "page4": {
+      "pageNumber": 4,
+      "checkboxes": {
+        "p04cb001_155": "Earnest Money: Yes (Box A)",
+        "p04cb002_156": "Earnest Money: No (Box B)",
+        "p04cb003_157": "Earnest Money: Not applicable (explain)",
+        "p04cb004_158": "Nonrefundable Deposit: No (Box A)",
+        "p04cb005_159": "Nonrefundable Deposit: Set number of days",
+        "p04cb006_160": "Nonrefundable Deposit: Within 3 days following agreement of repairs",
+        "p04cb007_161": "Nonrefundable Deposit: Other"
+      },
+      "textFields": {
+        "p04tf001_151": "Earnest money amount ($)",
+        "p04tf002_149": "Paragraph 5 - Loan and Closing Costs (textarea)",
+        "p04tf003_152": "Nonrefundable deposit amount ($)",
+        "p04tf004_153": "Nonrefundable deposit days",
+        "p04tf005_154": "Nonrefundable deposit other text (max 76 chars)"
+      }
+    },
+    "page5": {
+      "pageNumber": 5,
+      "checkboxes": {
+        "p05cb001_179": "Title Insurance: Seller pays (Box A)",
+        "p05cb002_180": "Title Insurance: Buyer and Seller split (Box B)",
+        "p05cb003_181": "Title Insurance: Other (Box C)"
+      },
+      "textFields": {
+        "p05tf001_183": "Title Insurance: Other text field"
+      },
+      "logic": {
+        "question": "Who pays for the title policy?",
+        "seller": "p05cb001_179",
+        "split": "p05cb002_180",
+        "other": ["p05cb003_181", "p05tf001_183"]
+      }
+    },
+    "page6": {
+      "pageNumber": 6,
+      "checkboxes": {
+        "p06cb001_207": "Survey: Yes, buyer requests survey (Box A)",
+        "p06cb002_208": "Survey: No, buyer declines survey (Box B)",
+        "p06cb006_212": "Survey Cost: Buyer pays",
+        "p06cb005_211": "Survey Cost: Seller pays",
+        "p06cb004_210": "Survey Cost: Equally split",
+        "p06cb003_209": "Survey Cost: Other (Box C)"
+      },
+      "textFields": {
+        "p06tf001_214": "Survey Cost: Other text field",
+        "p06tf002_205": "Paragraph 13: Additional items to convey",
+        "p06tf003_206": "Paragraph 13: Fixtures that will NOT convey"
+      },
+      "logic": {
+        "question1": "Does the buyer request a survey?",
+        "yes": "p06cb001_207",
+        "no": "p06cb002_208",
+        "question2": "Who will pay for the survey?",
+        "buyer": "p06cb006_212",
+        "seller": "p06cb005_211",
+        "split": "p06cb004_210",
+        "other": ["p06cb003_209", "p06tf001_214"],
+        "paragraph13_question1": "Are there additional items the buyer would like to convey?",
+        "paragraph13_yes1": "p06tf002_205",
+        "paragraph13_question2": "Are there any fixtures that will NOT convey?",
+        "paragraph13_yes2": "p06tf003_206"
+      }
+    },
+    "page7": {
+      "pageNumber": 7,
+      "checkboxes": {
+        "p07cb001_235": "Paragraph 14: No contingency (Box A)",
+        "p07cb002_236": "Paragraph 14: Yes contingency (Box B)",
+        "p07cb003_237": "Contingency: Sale of Buyer property",
+        "p07cb004_238": "Contingency: Appraisal contingency",
+        "p07cb005_239": "Buyer removes contingency",
+        "p07cb006_240": "At time of Real Estate Contract acceptance"
+      },
+      "textFields": {
+        "p07tf001_234": "Paragraph 14: Contingency description (textarea, max 244 chars)",
+        "p07tf002_245": "Contingency property address",
+        "p07tf003_246": "Contingency deadline date",
+        "p07tf004_247": "Contingency event description"
+      },
+      "logic": {
+        "question1": "Does the buyer have a contingency?",
+        "no": "p07cb001_235",
+        "yes": ["p07cb002_236", "p07tf001_234", "datepicker"]
+      }
+    },
+    "page8": {
+      "pageNumber": 8,
+      "checkboxes": {
+        "p08cb001_270": "No Home Warranty provided",
+        "p08cb002_271": "Home Warranty: Plan provided by company",
+        "p08cb003_272": "Home Warranty: Plan paid for by party",
+        "p08cb004_273": "Home Warranty: Cost limit",
+        "p08cb005_274": "Home Warranty: Subject to conditions",
+        "p08cb006_275": "Home Warranty: Part of Real Estate Contract"
+      },
+      "textFields": {
+        "p08tf001_277": "Home Warranty company name",
+        "p08tf002_278": "Home Warranty plan type",
+        "p08tf003_279": "Home Warranty provider details",
+        "p08tf004_280": "Home Warranty additional details",
+        "p08tf005_281": "Home Warranty cost amount ($)",
+        "p08tf006_282": "Home Warranty notes",
+        "p08tf007_283": "Home Warranty section notes"
+      }
+    },
+    "page9": {
+      "pageNumber": 9,
+      "checkboxes": {},
+      "textFields": {}
+    },
+    "page10": {
+      "pageNumber": 10,
+      "checkboxes": {
+        "p10cb005_326": "HOA: Property NOT subject to mandatory membership",
+        "p10cb006_327": "HOA: Property IS subject to mandatory membership",
+        "p10cb001_317": "SELLER PROPERTY DISCLOSURE: Provided",
+        "p10cb007_328": "HOA: See Owners Association Addendum attached",
+        "p10cb002_318": "Property Disclosure: Buyer received",
+        "p10cb003_319": "Property Disclosure: Previously received",
+        "p10cb004_320": "Property Disclosure: Buyer waives"
+      },
+      "textFields": {}
+    },
+    "page11": {
+      "pageNumber": 11,
+      "checkboxes": {
+        "p11cb005_355": "Termite: No treatment required",
+        "p11cb006_356": "Termite: Letter required",
+        "p11cb007_357": "Lead Paint: Other/Additional",
+        "p11cb001_344": "Lead Paint: Assessment/Inspection checkbox",
+        "p11cb002_345": "Lead Paint: Buyer waives right"
+      },
+      "textFields": {
+        "p11tf001_354": "Termite inspection company"
+      }
+    },
+    "page12": {
+      "pageNumber": 12,
+      "checkboxes": {},
+      "textFields": {}
+    },
+    "page13": {
+      "pageNumber": 13,
+      "checkboxes": {
+        "p13cb001_401": "Possession: Upon Closing",
+        "p13cb002_402": "Possession: Delayed (see Addendum)",
+        "p13cb003_403": "Possession: Prior to Closing (see Addendum)"
+      },
+      "textFields": {}
+    },
+    "page14": {
+      "pageNumber": 14,
+      "checkboxes": {},
+      "textFields": {}
+    },
+    "page15": {
+      "pageNumber": 15,
+      "checkboxes": {
+        "p15cb001_442": "LICENSEE DISCLOSURE section",
+        "p15cb002_443": "Licensee Disclosure: Not Applicable",
+        "p15cb003_444": "Licensee Disclosure: Agent has interest",
+        "p15cb004_445": "Licensee Disclosure: Agent is principal",
+        "p15cb005_446": "Licensee Disclosure: Agent relationship",
+        "p15cb006_447": "Licensee Disclosure: Other",
+        "p15cb007_448": "Licensee Disclosure: Additional",
+        "p15cb008_449": "Licensee Disclosure: Confirmation"
+      },
+      "textFields": {}
+    },
+    "page16": {
+      "pageNumber": 16,
+      "checkboxes": {
+        "p16cb001_466": "Contract expiration option 1",
+        "p16cb002_467": "Contract expiration option 2"
+      },
+      "textFields": {
+        "p16tf001_469": "Contract expiration date/time"
+      }
+    },
+    "page17": {
+      "pageNumber": 17,
+      "checkboxes": {
+        "p17cb001_479": "Seller Response: ACCEPTED",
+        "p17cb002_480": "Seller Response: COUNTER-OFFERED",
+        "p17cb005_500": "Seller Response: REJECTED",
+        "p17cb004_512": "Seller Response: Contract copy provided",
+        "p17cb003_516": "Seller Response: BACKUP CONTRACT"
+      },
+      "textFields": {
+        "p17tf001_482": "Seller Initials field",
+        "p17tf002_514": "Counter offer terms",
+        "p17tf003_518": "Backup contract terms"
+      }
+    },
+    "page18": {
+      "pageNumber": 18,
+      "checkboxes": {},
+      "textFields": {}
+    }
+  },
+  "globalFields": {
+    "Global_Info-Property-Location-Address-Full_66": "Property Address",
+    "Global_Info-Buyer-Entity-Name_67": "Buyer Name(s)",
+    "Global_Info-Sale-Price-Amount_68": "Purchase Price ($)",
+    "Global_Info-Buyer-Parties-Party-1-Name_524": "Buyer 1 Signature",
+    "Global_Info-Buyer-Parties-Party-2-Name_525": "Buyer 2 Signature",
+    "Global_Info-Seller-Parties-Party-1-Name_526": "Seller 1 Signature",
+    "Global_Info-Seller-Parties-Party-2-Name_527": "Seller 2 Signature",
+    "Global_Info-Buyer-Broker-Entity-Name_573": "Buyer Broker Company Name",
+    "Global_Info-Buyer-Parties-Party-3-Name_hdn_41": "Buyer 3 Name (hidden)",
+    "Global_Info-Buyer-Parties-Party-4-Name_hdn_42": "Buyer 4 Name (hidden)",
+    "Global_Info-Buyer-Parties-Party-5-Name_hdn_43": "Buyer 5 Name (hidden)",
+    "Global_Info-Buyer-Parties-Party-6-Name_hdn_44": "Buyer 6 Name (hidden)",
+    "Global_Info-Buyer-Parties-Party-7-Name_hdn_45": "Buyer 7 Name (hidden)",
+    "Global_Info-Buyer-Parties-Party-8-Name_hdn_46": "Buyer 8 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-3-Name_hdn_47": "Seller 3 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-4-Name_hdn_48": "Seller 4 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-5-Name_hdn_49": "Seller 5 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-6-Name_hdn_50": "Seller 6 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-7-Name_hdn_51": "Seller 7 Name (hidden)",
+    "Global_Info-Seller-Parties-Party-8-Name_hdn_52": "Seller 8 Name (hidden)",
+    "Global_Info-Buyer-Broker-BrokerAgent-Name_574": "Buyer Principal/Executive Broker Signature",
+    "Global_Info-Buyer-Broker-Agents-Agent-Name_576": "Selling Agent Signature",
+    "Global_Info-Buyer-Broker-BrokerAgent-Contact-EMail_575": "Buyer Broker Email",
+    "Global_Info-Buyer-Broker-Agents-Agent-Contact-EMail_577": "Selling Agent Email",
+    "Global_Info-Buyer-Broker-Agents-Agent-Contact-Phone-Cell_578": "Selling Agent Cell Phone",
+    "Global_Info-Buyer-Broker-BrokerAgent-ID-Full_579": "Buyer Broker AREC License #",
+    "Global_Info-Buyer-Broker-Agents-Agent-ID-Full_580": "Selling Agent AREC License #",
+    "Global_Info-Seller-Broker-Entity-Name_603": "Seller Broker Company Name",
+    "Global_Info-Seller-Broker-BrokerAgent-Name_604": "Seller Principal/Executive Broker Signature",
+    "Global_Info-Seller-Broker-Agents-Agent-Name_606": "Listing Agent Signature",
+    "Global_Info-Seller-Broker-BrokerAgent-Contact-EMail_605": "Seller Broker Email",
+    "Global_Info-Seller-Broker-Agents-Agent-Contact-EMail_607": "Listing Agent Email",
+    "Global_Info-Seller-Broker-Agents-Agent-Contact-Phone-Cell_608": "Listing Agent Cell Phone",
+    "Global_Info-Seller-Broker-BrokerAgent-ID-Full_609": "Seller Broker AREC License #",
+    "Global_Info-Seller-Broker-Agents-Agent-ID-Full_610": "Listing Agent AREC License #"
+  }
+}

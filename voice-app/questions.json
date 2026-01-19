@@ -1,0 +1,542 @@
+{
+  "title": "Arkansas Real Estate Contract",
+  "description": "Answer questions by voice to fill out the contract",
+  "questions": [
+    {
+      "id": "buyer_1_name",
+      "question": "What is the buyer's full name?",
+      "hint": "Say the name, or spell it using Alpha Bravo Charlie or A B C",
+      "type": "text"
+    },
+    {
+      "id": "has_buyer_2",
+      "question": "Is there a second buyer on this contract?",
+      "hint": "Yes if married couple or partners buying together",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No, just one buyer", "keywords": ["no", "none", "one", "single", "just me", "only one", "nope"] },
+        { "value": "yes", "label": "Yes, there is a second buyer", "keywords": ["yes", "two", "second", "spouse", "partner", "wife", "husband", "couple"] }
+      ]
+    },
+    {
+      "id": "buyer_2_name",
+      "question": "What is the second buyer's full name?",
+      "hint": "Say the name, or spell it using Alpha Bravo Charlie or A B C",
+      "type": "text",
+      "showIf": { "question": "has_buyer_2", "value": "yes" }
+    },
+    {
+      "id": "property_address",
+      "question": "What is the property address?",
+      "hint": "Example: 123 Main Street, Bentonville, AR 72712",
+      "fieldName": "Global_Info-Property-Location-Address-Full_66",
+      "type": "text"
+    },
+    {
+      "id": "purchase_price",
+      "question": "What is the purchase price?",
+      "hint": "Example: 450000 or four hundred fifty thousand",
+      "fieldName": "Global_Info-Sale-Price-Amount_68",
+      "type": "currency"
+    },
+    {
+      "id": "property_type",
+      "question": "What type of property is this?",
+      "hint": "Single family, condo, manufactured home, etc.",
+      "type": "choice",
+      "options": [
+        { "value": "single_family", "label": "Single family home", "keywords": ["single", "family", "house", "detached"], "fieldName": "p01cb001_71" },
+        { "value": "one_to_four", "label": "One-to-four unit dwelling", "keywords": ["duplex", "triplex", "fourplex", "multi", "unit"], "fieldName": "p01cb002_72" },
+        { "value": "manufactured", "label": "Manufactured/Mobile home", "keywords": ["manufactured", "mobile", "trailer"], "fieldName": "p01cb003_73" },
+        { "value": "builder_owned", "label": "Builder owned (older than 1 year)", "keywords": ["builder", "spec"], "fieldName": "p01cb004_74" },
+        { "value": "condo", "label": "Condominium/Town home", "keywords": ["condo", "condominium", "townhome", "town home", "townhouse"], "fieldName": "p01cb005_75" }
+      ]
+    },
+    {
+      "id": "purchase_method",
+      "question": "How will the buyer pay for the property?",
+      "hint": "Financing, cash, or loan assumption",
+      "type": "choice",
+      "options": [
+        { "value": "new_financing", "label": "New financing (getting a loan)", "keywords": ["financing", "loan", "mortgage", "finance", "borrow"], "fieldName": "p01cb006_76" },
+        { "value": "loan_assumption", "label": "Loan assumption", "keywords": ["assume", "assumption", "take over"], "fieldName": "p01cb007_77" },
+        { "value": "cash", "label": "Cash purchase", "keywords": ["cash", "all cash", "no loan"], "fieldName": "p01cb008_78" }
+      ]
+    },
+    {
+      "id": "loan_type",
+      "question": "What type of loan will be used?",
+      "hint": "Conventional, VA, FHA, or USDA",
+      "type": "choice",
+      "showIf": { "question": "purchase_method", "value": "new_financing" },
+      "options": [
+        { "value": "conventional", "label": "Conventional loan", "keywords": ["conventional", "regular", "standard"], "fieldName": "p01cb009_79" },
+        { "value": "va", "label": "VA loan", "keywords": ["va", "veteran", "veterans", "military"], "fieldName": "p01cb010_80" },
+        { "value": "fha", "label": "FHA loan", "keywords": ["fha", "federal housing"], "fieldName": "p01cb011_81" },
+        { "value": "usda", "label": "USDA-RD loan", "keywords": ["usda", "rural", "agriculture"], "fieldName": "p01cb012_82" },
+        { "value": "other", "label": "Other financing", "keywords": ["other", "different", "alternative"], "fieldName": "p01cb013_83" }
+      ]
+    },
+    {
+      "id": "usda_loan_type",
+      "question": "Is this USDA loan direct or through a lender?",
+      "hint": "Direct = Box (i), Lender = Box (ii)",
+      "type": "choice",
+      "showIf": { "question": "loan_type", "value": "usda" },
+      "options": [
+        { "value": "direct", "label": "Direct (USDA)", "keywords": ["direct", "usda direct", "government"], "fieldName": "p01cb014_84" },
+        { "value": "lender", "label": "Through a lender", "keywords": ["lender", "bank", "mortgage company", "loan officer"], "fieldName": "p01cb015_85" }
+      ]
+    },
+    {
+      "id": "dual_agency",
+      "question": "Is this dual agency?",
+      "hint": "Yes if same agent represents both buyer and seller",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No, not dual agency", "keywords": ["no", "not", "single", "one"], "fieldName": "p03cb002_121" },
+        { "value": "yes", "label": "Yes, dual agency", "keywords": ["yes", "dual", "both", "same"], "fieldName": "p03cb003_122" }
+      ]
+    },
+    {
+      "id": "seller_pay_closing_costs",
+      "question": "Does the buyer want the seller to pay closing costs?",
+      "hint": "Yes or no",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, seller pays closing costs", "keywords": ["yes", "seller", "pay", "help"] },
+        { "value": "no", "label": "No, buyer pays own costs", "keywords": ["no", "buyer", "own", "none"] }
+      ]
+    },
+    {
+      "id": "closing_costs_amount",
+      "question": "How much will the seller pay toward closing costs?",
+      "hint": "Example: 5000 or five thousand dollars",
+      "type": "currency",
+      "showIf": { "question": "seller_pay_closing_costs", "value": "yes" }
+    },
+    {
+      "id": "has_earnest_money",
+      "question": "Is there earnest money?",
+      "hint": "If yes check box A, if no check box B",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, there is earnest money", "keywords": ["yes", "earnest", "deposit"], "fieldName": "p04cb001_144" },
+        { "value": "no", "label": "No earnest money", "keywords": ["no", "none", "zero"], "fieldName": "p04cb002_145" }
+      ]
+    },
+    {
+      "id": "has_nonrefundable_deposit",
+      "question": "Is there a nonrefundable deposit?",
+      "hint": "If no check Box A, if yes then additional questions",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No nonrefundable deposit", "keywords": ["no", "none", "refundable"], "fieldName": "p04cb004_158" },
+        { "value": "yes", "label": "Yes, nonrefundable deposit", "keywords": ["yes", "nonrefundable"] }
+      ]
+    },
+    {
+      "id": "nonrefundable_deposit_amount",
+      "question": "What is the nonrefundable deposit amount?",
+      "hint": "Example: 1000 or one thousand dollars",
+      "type": "currency",
+      "showIf": { "question": "has_nonrefundable_deposit", "value": "yes" }
+    },
+    {
+      "id": "nonrefundable_deposit_timing",
+      "question": "Would you like the nonrefundable deposit due within a certain number of days upon the contract being signed, within three days following the agreement of repairs of the inspection repair survey agenda, or other?",
+      "hint": "Box B = within X days, Box C = within 3 days after repair agreement, Box D = other",
+      "type": "choice",
+      "showIf": { "question": "has_nonrefundable_deposit", "value": "yes" },
+      "options": [
+        { "value": "within_days", "label": "Within a certain number of days of contract signing", "keywords": ["days", "within", "contract", "signed", "signing"], "fieldName": "p04cb005_159" },
+        { "value": "after_repairs", "label": "Within 3 days following agreement of repairs", "keywords": ["repairs", "inspection", "survey", "three days", "agreement"], "fieldName": "p04cb006_160" },
+        { "value": "other", "label": "Other", "keywords": ["other", "different", "specific"], "fieldName": "p04cb007_161" }
+      ]
+    },
+    {
+      "id": "nonrefundable_deposit_days",
+      "question": "How many days after contract signing is the nonrefundable deposit due?",
+      "hint": "Example: 3 or 5",
+      "type": "text",
+      "showIf": { "question": "nonrefundable_deposit_timing", "value": "within_days" }
+    },
+    {
+      "id": "nonrefundable_deposit_other",
+      "question": "What would you like in the other section?",
+      "hint": "Describe when the nonrefundable deposit is due",
+      "type": "text",
+      "showIf": { "question": "nonrefundable_deposit_timing", "value": "other" }
+    },
+    {
+      "id": "title_insurance_payer",
+      "question": "Who will pay for the owner's title insurance policy?",
+      "hint": "Seller pays = Box A, Buyer and Seller split = Box B, Other = Box C",
+      "type": "choice",
+      "options": [
+        { "value": "seller", "label": "Seller pays", "keywords": ["seller", "they pay", "their"], "fieldName": "p05cb001_179" },
+        { "value": "split", "label": "Buyer and Seller split", "keywords": ["split", "half", "both", "share"], "fieldName": "p05cb002_180" },
+        { "value": "other", "label": "Other arrangement", "keywords": ["other", "different"], "fieldName": "p05cb003_181" }
+      ]
+    },
+    {
+      "id": "buyer_requests_survey",
+      "question": "Does the buyer request a survey?",
+      "hint": "If yes check Box A, if no check Box B",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, buyer requests survey", "keywords": ["yes", "survey", "want", "need"], "fieldName": "p06cb001_207" },
+        { "value": "no", "label": "No, buyer declines survey", "keywords": ["no", "decline", "skip", "don't need"], "fieldName": "p06cb002_208" }
+      ]
+    },
+    {
+      "id": "survey_paid_by",
+      "question": "Who will pay for the survey?",
+      "hint": "Buyer, seller, equally split, or other",
+      "type": "choice",
+      "showIf": { "question": "buyer_requests_survey", "value": "yes" },
+      "options": [
+        { "value": "buyer", "label": "Buyer pays", "keywords": ["buyer", "i pay", "we pay"], "fieldName": "p06cb006_212" },
+        { "value": "seller", "label": "Seller pays", "keywords": ["seller", "they pay"], "fieldName": "p06cb005_211" },
+        { "value": "split", "label": "Split equally", "keywords": ["split", "equal", "half", "both"], "fieldName": "p06cb004_210" },
+        { "value": "other", "label": "Other arrangement", "keywords": ["other", "different"], "fieldName": "p06cb003_209" }
+      ]
+    },
+    {
+      "id": "survey_other_description",
+      "question": "What goes in the other blank for survey payment?",
+      "hint": "Describe the payment arrangement",
+      "type": "text",
+      "showIf": { "question": "survey_paid_by", "value": "other" },
+      "fieldName": "p06tf001_214"
+    },
+    {
+      "id": "additional_items_convey",
+      "question": "Are there additional items the buyer would like to convey?",
+      "hint": "Items like refrigerator, washer, dryer, etc.",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, additional items to convey", "keywords": ["yes", "items", "include", "convey"] },
+        { "value": "no", "label": "No additional items", "keywords": ["no", "none", "nothing extra"] }
+      ]
+    },
+    {
+      "id": "additional_items_list",
+      "question": "What items would the buyer like to convey?",
+      "hint": "Example: Refrigerator, washer, dryer, outdoor furniture",
+      "type": "text",
+      "showIf": { "question": "additional_items_convey", "value": "yes" },
+      "fieldName": "p06tf002_205"
+    },
+    {
+      "id": "fixtures_not_convey",
+      "question": "Are there any fixtures that will NOT convey?",
+      "hint": "Items attached to property that seller is keeping",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, fixtures not conveying", "keywords": ["yes", "keeping", "not include", "exclude"] },
+        { "value": "no", "label": "No, all fixtures convey", "keywords": ["no", "all", "everything"] }
+      ]
+    },
+    {
+      "id": "fixtures_not_convey_list",
+      "question": "What are those items that will not convey?",
+      "hint": "Example: Dining room chandelier, master bedroom curtains",
+      "type": "text",
+      "showIf": { "question": "fixtures_not_convey", "value": "yes" },
+      "fieldName": "p06tf003_206"
+    },
+    {
+      "id": "has_contingency",
+      "question": "Does the buyer have a contingency?",
+      "hint": "If no check Box A, if yes check Box B",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No contingency", "keywords": ["no", "none", "not contingent"], "fieldName": "p07cb001_235" },
+        { "value": "yes", "label": "Yes, there is a contingency", "keywords": ["yes", "contingent", "sell", "current home"], "fieldName": "p07cb002_236" }
+      ]
+    },
+    {
+      "id": "contingency_description",
+      "question": "What is the contingency?",
+      "hint": "Example: Sale of buyer's current home at 456 Oak Avenue, Rogers, AR",
+      "type": "text",
+      "showIf": { "question": "has_contingency", "value": "yes" },
+      "fieldName": "p07tf001_234"
+    },
+    {
+      "id": "contingency_date",
+      "question": "What is the contingency deadline date?",
+      "hint": "Example: March 15, 2026",
+      "type": "date",
+      "showIf": { "question": "has_contingency", "value": "yes" }
+    },
+    {
+      "id": "contingency_binding_type",
+      "question": "Is the contingency binding with or without an escape clause?",
+      "hint": "With escape clause = Box (i), without = Box (ii)",
+      "type": "choice",
+      "showIf": { "question": "has_contingency", "value": "yes" },
+      "options": [
+        { "value": "with_escape", "label": "Binding with escape clause", "keywords": ["with", "escape", "clause", "kick out"], "fieldName": "p07cb003_239" },
+        { "value": "without_escape", "label": "Binding without escape clause", "keywords": ["without", "no escape", "firm"], "fieldName": "p07cb004_240" }
+      ]
+    },
+    {
+      "id": "contingency_removal_hours",
+      "question": "How many hours does the buyer have to remove the contingency?",
+      "hint": "Example: 48 hours",
+      "type": "number",
+      "showIf": { "question": "contingency_binding_type", "value": "with_escape" }
+    },
+    {
+      "id": "contingency_notification_address",
+      "question": "What address should be used for contingency notifications?",
+      "hint": "Address where notifications should be sent",
+      "type": "text",
+      "showIf": { "question": "contingency_binding_type", "value": "with_escape" }
+    },
+    {
+      "id": "contingency_closing_days",
+      "question": "How many calendar days after contingency removal for closing?",
+      "hint": "Example: 45 days",
+      "type": "number",
+      "showIf": { "question": "has_contingency", "value": "yes" }
+    },
+    {
+      "id": "contingency_time_start",
+      "question": "When do the time constraints start?",
+      "hint": "At contract acceptance or at removal of contingency",
+      "type": "choice",
+      "showIf": { "question": "contingency_binding_type", "value": "with_escape" },
+      "options": [
+        { "value": "acceptance", "label": "At time of real estate contract acceptance", "keywords": ["acceptance", "contract", "signed"], "fieldName": "p07cb005_244" },
+        { "value": "removal", "label": "At removal of contingency", "keywords": ["removal", "contingency", "removed"], "fieldName": "p07cb006_245" }
+      ]
+    },
+    {
+      "id": "has_home_warranty",
+      "question": "Does the buyer want a home warranty?",
+      "hint": "If no check Box A, if yes then continue",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No home warranty", "keywords": ["no", "none", "without", "skip", "don't", "does not"], "fieldName": "p08cb001_270" },
+        { "value": "yes", "label": "Yes, buyer wants home warranty", "keywords": ["yes", "want", "wants", "would like", "warranty"] }
+      ]
+    },
+    {
+      "id": "warranty_specific_company",
+      "question": "Does the buyer have a specific company and plan they are requesting?",
+      "hint": "If yes, fill in Box B with company and plan details",
+      "type": "choice",
+      "showIf": { "question": "has_home_warranty", "value": "yes" },
+      "options": [
+        { "value": "yes", "label": "Yes, specific company and plan", "keywords": ["yes", "specific", "particular", "company", "plan"], "fieldName": "p08cb002_271" },
+        { "value": "no", "label": "No, buyer will select later", "keywords": ["no", "select", "choose", "later", "any"], "fieldName": "p08cb003_272" }
+      ]
+    },
+    {
+      "id": "warranty_company_name",
+      "question": "What is the warranty company name?",
+      "hint": "Example: American Home Shield, First American",
+      "type": "text",
+      "showIf": { "question": "warranty_specific_company", "value": "yes" },
+      "fieldName": "p08tf001_277"
+    },
+    {
+      "id": "warranty_plan_name",
+      "question": "What specific plan?",
+      "hint": "Example: ShieldGold, Premium Plan",
+      "type": "text",
+      "showIf": { "question": "warranty_specific_company", "value": "yes" },
+      "fieldName": "p08tf002_278"
+    },
+    {
+      "id": "warranty_paid_by",
+      "question": "Who will pay for the home warranty?",
+      "hint": "Buyer or seller",
+      "type": "choice",
+      "showIf": { "question": "has_home_warranty", "value": "yes" },
+      "options": [
+        { "value": "Buyer", "label": "Buyer pays", "keywords": ["buyer", "i pay", "we pay", "purchaser"] },
+        { "value": "Seller", "label": "Seller pays", "keywords": ["seller", "they pay", "vendor"] }
+      ]
+    },
+    {
+      "id": "warranty_cost_max",
+      "question": "What is the maximum cost for the home warranty?",
+      "hint": "Example: 500 or five hundred dollars",
+      "type": "currency",
+      "showIf": { "question": "has_home_warranty", "value": "yes" }
+    },
+    {
+      "id": "wants_home_inspection",
+      "question": "Does the buyer want a home inspection?",
+      "hint": "If yes then pick Box 16B",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, buyer wants inspection", "keywords": ["yes", "inspection", "inspect", "check"], "fieldName": "p08cb006_275" },
+        { "value": "no", "label": "No, waiving inspection (AS IS)", "keywords": ["no", "waive", "skip", "as is"], "fieldName": "p08cb005_274" }
+      ]
+    },
+    {
+      "id": "has_hoa",
+      "question": "Is there a Home Owners Association?",
+      "hint": "Yes or no - homeowners association",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No, property has no HOA", "keywords": ["no", "none", "not", "without"], "fieldName": "p10cb005_326" },
+        { "value": "yes", "label": "Yes, subject to mandatory membership", "keywords": ["yes", "hoa", "association", "homeowners"], "fieldName": "p10cb006_327" }
+      ]
+    },
+    {
+      "id": "seller_disclosure_received",
+      "question": "Has the buyer received and reviewed the seller's property disclosure?",
+      "hint": "If yes check Box A",
+      "type": "choice",
+      "options": [
+        { "value": "yes", "label": "Yes, disclosure received and reviewed", "keywords": ["yes", "received", "have it", "got it", "reviewed"], "fieldName": "p10cb001_317" },
+        { "value": "no", "label": "No, not yet received", "keywords": ["no", "not yet", "waiting", "haven't"] }
+      ]
+    },
+    {
+      "id": "buyer_requests_disclosure_copy",
+      "question": "Does the buyer request a copy?",
+      "hint": "If yes check Box B",
+      "type": "choice",
+      "showIf": { "question": "seller_disclosure_received", "value": "no" },
+      "options": [
+        { "value": "yes", "label": "Yes, buyer requests copy", "keywords": ["yes", "request", "want", "need"], "fieldName": "p10cb002_318" },
+        { "value": "no", "label": "No, buyer does not request a copy", "keywords": ["no", "don't need", "skip"] }
+      ]
+    },
+    {
+      "id": "seller_filled_disclosure",
+      "question": "Is there a disclosure filled out by the seller?",
+      "hint": "If yes check Box C, if no check Box D",
+      "type": "choice",
+      "showIf": { "question": "buyer_requests_disclosure_copy", "value": "no" },
+      "options": [
+        { "value": "yes", "label": "Yes, disclosure completed by seller", "keywords": ["yes", "completed", "signed", "filled"], "fieldName": "p10cb003_319" },
+        { "value": "no", "label": "No, no disclosure available", "keywords": ["no", "none", "not available", "doesn't exist"], "fieldName": "p10cb004_320" }
+      ]
+    },
+    {
+      "id": "requests_termite_policy",
+      "question": "Does buyer request a termite policy?",
+      "hint": "If no check Box A",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No termite policy requested", "keywords": ["no", "none", "skip", "don't need"], "fieldName": "p11cb005_355" },
+        { "value": "yes", "label": "Yes, buyer requests termite policy", "keywords": ["yes", "termite", "pest", "want"] }
+      ]
+    },
+    {
+      "id": "termite_plan_type",
+      "question": "Do they request a One Year Warranty with treatment and full protection plan or other?",
+      "hint": "One year warranty = Box B, Other = Box C",
+      "type": "choice",
+      "showIf": { "question": "requests_termite_policy", "value": "yes" },
+      "options": [
+        { "value": "one_year_warranty", "label": "One Year Warranty with treatment and full protection plan", "keywords": ["one year", "warranty", "treatment", "full protection"], "fieldName": "p11cb006_356" },
+        { "value": "other", "label": "Other termite policy", "keywords": ["other", "different", "custom"], "fieldName": "p11cb007_357" }
+      ]
+    },
+    {
+      "id": "termite_other_description",
+      "question": "What would you like in the other section?",
+      "hint": "Example: Annual inspection with spot treatment as needed",
+      "type": "text",
+      "showIf": { "question": "termite_plan_type", "value": "other" }
+    },
+    {
+      "id": "built_prior_1978",
+      "question": "Was the home built prior to 1978?",
+      "hint": "If yes check Box B, if no check Box A",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No, built 1978 or later", "keywords": ["no", "newer", "after", "1978 or later"], "fieldName": "p11cb001_358" },
+        { "value": "yes", "label": "Yes, built prior to 1978", "keywords": ["yes", "older", "before", "prior"], "fieldName": "p11cb002_359" }
+      ]
+    },
+    {
+      "id": "closing_date",
+      "question": "What is the closing date?",
+      "hint": "Example: April 30, 2026",
+      "type": "date"
+    },
+    {
+      "id": "possession_type",
+      "question": "Shall the possession be delivered upon closing, delayed possession, or prior to closing?",
+      "hint": "Upon closing = Box A, delayed = Box B, prior to closing = Box C",
+      "type": "choice",
+      "options": [
+        { "value": "at_closing", "label": "Upon closing", "keywords": ["closing", "at", "upon", "same day", "immediately"], "fieldName": "p13cb001_401" },
+        { "value": "after_closing", "label": "Delayed possession", "keywords": ["after", "delayed", "later", "rent back"], "fieldName": "p13cb002_402" },
+        { "value": "prior_to_closing", "label": "Prior to closing", "keywords": ["before", "early", "prior"], "fieldName": "p13cb003_403" }
+      ]
+    },
+    {
+      "id": "other_terms",
+      "question": "Are there any other terms or conditions?",
+      "hint": "Example: Seller agrees to leave all window treatments",
+      "type": "text",
+      "optional": true
+    },
+    {
+      "id": "has_real_estate_license",
+      "question": "Does party to this contract have a valid Arkansas real estate license?",
+      "hint": "If no check Box A",
+      "type": "choice",
+      "options": [
+        { "value": "no", "label": "No valid license", "keywords": ["no", "none", "not licensed"], "fieldName": "p14tf001_420" },
+        { "value": "yes", "label": "Yes, has valid Arkansas license", "keywords": ["yes", "licensed", "agent", "broker"] }
+      ]
+    },
+    {
+      "id": "license_represented_by_agent",
+      "question": "Are they represented by an agent?",
+      "hint": "If no check Box D",
+      "type": "choice",
+      "showIf": { "question": "has_real_estate_license", "value": "yes" },
+      "options": [
+        { "value": "no", "label": "No, not represented by agent", "keywords": ["no", "not represented", "self"], "fieldName": "p15cb004_445" },
+        { "value": "yes", "label": "Yes, represented by agent", "keywords": ["yes", "represented", "has agent"] }
+      ]
+    },
+    {
+      "id": "license_entity_type",
+      "question": "Is that an entity or an individual?",
+      "hint": "Individual = Box B, Entity = Box C",
+      "type": "choice",
+      "showIf": { "question": "license_represented_by_agent", "value": "yes" },
+      "options": [
+        { "value": "individual", "label": "Individual", "keywords": ["individual", "person", "personal"], "fieldName": "p15cb002_443" },
+        { "value": "entity", "label": "Entity (LLC, Corp, etc.)", "keywords": ["entity", "llc", "corporation", "company", "business"], "fieldName": "p15cb003_444" }
+      ]
+    },
+    {
+      "id": "license_buyer_or_seller",
+      "question": "Acting as buyer or seller?",
+      "hint": "Buyer or seller checkbox based on entity type",
+      "type": "choice",
+      "showIf": { "question": "license_represented_by_agent", "value": "yes" },
+      "options": [
+        { "value": "buyer", "label": "Buyer", "keywords": ["buyer", "buying", "purchaser"] },
+        { "value": "seller", "label": "Seller", "keywords": ["seller", "selling", "vendor"] }
+      ],
+      "fieldMapping": {
+        "individual_buyer": "p15cb005_446",
+        "individual_seller": "p15cb006_447",
+        "entity_buyer": "p15cb007_448",
+        "entity_seller": "p15cb008_449"
+      }
+    },
+    {
+      "id": "contract_expiration",
+      "question": "When does this contract expire? Please include the date and time.",
+      "hint": "Example: January 25th at 5pm",
+      "type": "datetime"
+    }
+  ]
+}

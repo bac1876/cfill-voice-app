@@ -1,0 +1,26 @@
+{
+  "checkboxes": {},
+  "fhaRelatedText": [
+    {
+      "text": "Loan type will be:",
+      "x": 166.890625,
+      "y": 1173.71875,
+      "width": 190.6875,
+      "height": 25
+    },
+    {
+      "text": "FHA.",
+      "x": 220.890625,
+      "y": 1306.90625,
+      "width": 51.328125,
+      "height": 25
+    },
+    {
+      "text": "(Continues on Page 2, for \"FHA NOTICE TO BUYER\")",
+      "x": 277.890625,
+      "y": 1310.90625,
+      "width": 453.09375,
+      "height": 20
+    }
+  ]
+}
