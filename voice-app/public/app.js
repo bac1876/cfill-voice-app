@@ -15,15 +15,32 @@ class CFillApp {
         this.useElevenLabs = true;  // Use natural voice
         this.eagerEndOfTurn = false;  // Flux turn detection state
 
+        // Persistent microphone stream (requested once, kept alive)
+        this.persistentStream = null;
+        this.micPermissionGranted = false;
+
+        // Fix issues mode - only re-ask questions that had problems
+        this.fixIssuesMode = false;
+        this.issueQuestionIds = [];  // Question IDs with issues to fix
+
+        // Review choice mode - listening for "review" or "fill" after questions complete
+        this.reviewChoiceMode = false;
+
         this.init();
     }
 
     // Text-to-speech using ElevenLabs for natural voice
     speak(text) {
         return new Promise(async (resolve) => {
-            // Stop any current audio
+            // Stop ALL audio - both ElevenLabs and browser TTS
             this.audioPlayer.pause();
             this.audioPlayer.currentTime = 0;
+
+            // CRITICAL: Also cancel any browser speechSynthesis
+            // This prevents the "two voices" bug where both play simultaneously
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
 
             if (!text) {
                 resolve();
@@ -66,35 +83,9 @@ class CFillApp {
             } catch (error) {
                 console.error('ElevenLabs TTS error:', error);
                 this.isSpeaking = false;
-                // Fallback to browser speech if ElevenLabs fails
-                await this.speakFallback(text);
+                // No fallback - if ElevenLabs fails, continue silently
                 resolve();
             }
-        });
-    }
-
-    // Fallback to browser speech synthesis
-    speakFallback(text) {
-        return new Promise((resolve) => {
-            const synth = window.speechSynthesis;
-            synth.cancel();
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 1.05;
-
-            const voices = synth.getVoices();
-            const preferredVoice = voices.find(v =>
-                v.name.includes('Samantha') ||
-                v.name.includes('Google US English') ||
-                v.name.includes('Microsoft Zira')
-            ) || voices.find(v => v.lang.startsWith('en'));
-
-            if (preferredVoice) utterance.voice = preferredVoice;
-
-            utterance.onend = () => resolve();
-            utterance.onerror = () => resolve();
-
-            synth.speak(utterance);
         });
     }
 
@@ -127,6 +118,40 @@ class CFillApp {
         // Register service worker for PWA
         this.registerServiceWorker();
         console.log('CFillApp ready!');
+    }
+
+    // Request microphone permission once and keep stream alive
+    async requestMicrophonePermission() {
+        if (this.persistentStream) {
+            console.log('Microphone already available');
+            return true;
+        }
+
+        try {
+            console.log('Requesting microphone permission...');
+            this.persistentStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    channelCount: 1,
+                    sampleRate: 16000,
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+            this.micPermissionGranted = true;
+            console.log('Microphone permission granted - stream kept alive');
+
+            // Mute the tracks initially (we'll unmute when recording)
+            this.persistentStream.getAudioTracks().forEach(track => {
+                track.enabled = false;
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            this.micPermissionGranted = false;
+            this.showToast('Microphone access is required for voice input', true);
+            return false;
+        }
     }
 
     async loadQuestions() {
@@ -229,6 +254,13 @@ class CFillApp {
     }
 
     async startQuestionnaire() {
+        // Request microphone permission once at the start
+        const micGranted = await this.requestMicrophonePermission();
+        if (!micGranted) {
+            this.showToast('Microphone is required. Please allow access and try again.', true);
+            return;
+        }
+
         this.currentIndex = 0;
         this.answers = {};
         this.conversationMode = true;  // Enable auto-advance
@@ -244,6 +276,21 @@ class CFillApp {
 
         // Small delay to let UI render and user process the transition
         await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Fix Issues Mode: Skip questions that don't have issues
+        if (this.fixIssuesMode && !this.issueQuestionIds.includes(question.id)) {
+            // Skip this question - it doesn't have an issue
+            if (this.currentIndex < this.questions.length - 1) {
+                this.currentIndex++;
+                this.showQuestion();
+            } else {
+                // Done fixing all issues - return to review
+                this.fixIssuesMode = false;
+                this.issueQuestionIds = [];
+                this.showReview();
+            }
+            return;
+        }
 
         // Skip questions with showIf conditions that aren't met
         if (question.showIf) {
@@ -393,6 +440,37 @@ class CFillApp {
             this.stopRecording();
         }
 
+        // If editing from review (single question tap or voice command), go back to review screen
+        if (this.editingFromReview) {
+            await this.speak(this.getConfirmation());
+            await new Promise(resolve => setTimeout(resolve, 300));
+            this.editingFromReview = false;
+            // Return directly to review navigation (skip AI review since that's already done)
+            this.returnToReviewNavigation();
+            return;
+        }
+
+        // Fix Issues Mode: Move to next question with issue, or back to review
+        if (this.fixIssuesMode && autoAdvance) {
+            await this.speak(this.getConfirmation());
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Remove this question from the issues list (it's fixed now)
+            this.issueQuestionIds = this.issueQuestionIds.filter(id => id !== this.questions[this.currentIndex].id);
+
+            // Check if there are more issues to fix
+            if (this.issueQuestionIds.length === 0) {
+                // All issues fixed - return to review
+                await this.speak("All issues fixed. Let me review again.");
+                this.fixIssuesMode = false;
+                this.showReview();
+            } else {
+                // Move to next question (showQuestion will skip non-issue questions)
+                this.nextQuestion();
+            }
+            return;
+        }
+
         // In conversation mode: quick confirmation then auto-advance
         if (this.conversationMode && autoAdvance) {
             await this.speak(this.getConfirmation());
@@ -417,25 +495,28 @@ class CFillApp {
 
     async startRecording() {
         try {
-            // Request microphone permission
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    channelCount: 1,
-                    sampleRate: 16000,
-                    echoCancellation: true,
-                    noiseSuppression: true
+            // Ensure we have microphone permission (uses persistent stream)
+            if (!this.persistentStream) {
+                const granted = await this.requestMicrophonePermission();
+                if (!granted) {
+                    return;
                 }
+            }
+
+            // Enable audio tracks for recording
+            this.persistentStream.getAudioTracks().forEach(track => {
+                track.enabled = true;
             });
 
             // Connect to WebSocket
             this.connectWebSocket();
 
-            // Set up audio processing
+            // Set up audio processing (reuse persistent stream)
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
                 sampleRate: 16000
             });
 
-            const source = this.audioContext.createMediaStreamSource(stream);
+            const source = this.audioContext.createMediaStreamSource(this.persistentStream);
             const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
 
             source.connect(processor);
@@ -453,7 +534,6 @@ class CFillApp {
                 }
             };
 
-            this.stream = stream;
             this.processor = processor;
             this.isRecording = true;
 
@@ -474,17 +554,24 @@ class CFillApp {
         // Stop audio processing
         if (this.processor) {
             this.processor.disconnect();
+            this.processor = null;
         }
         if (this.audioContext) {
             this.audioContext.close();
+            this.audioContext = null;
         }
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
+
+        // Mute the persistent stream (don't stop it - keeps permission alive)
+        if (this.persistentStream) {
+            this.persistentStream.getAudioTracks().forEach(track => {
+                track.enabled = false;
+            });
         }
 
         // Close WebSocket
         if (this.ws) {
             this.ws.close();
+            this.ws = null;
         }
 
         // Update UI
@@ -502,11 +589,35 @@ class CFillApp {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/transcribe`;
 
-        this.ws = new WebSocket(wsUrl);
+        console.log(`[WS] Connecting to: ${wsUrl}`);
+
+        try {
+            this.ws = new WebSocket(wsUrl);
+        } catch (err) {
+            console.error('[WS] Failed to create WebSocket:', err);
+            this.showToast('WebSocket connection failed', true);
+            return;
+        }
+
+        this.ws.onerror = (error) => {
+            console.error('[WS] WebSocket error:', error);
+            this.showToast('Connection error - check certificate', true);
+        };
+
+        this.ws.onclose = (event) => {
+            console.log(`[WS] WebSocket closed: code=${event.code}, reason=${event.reason}`);
+        };
 
         this.ws.onopen = () => {
-            console.log('WebSocket connected');
-            // Send initial message to trigger Deepgram connection
+            console.log('[WS] WebSocket connected!');
+            // Send question type first so server can select the right model
+            const question = this.questions[this.currentIndex];
+            if (question) {
+                const questionType = question.type || 'text';
+                console.log(`Sending question type: ${questionType} for hybrid model selection`);
+                this.ws.send(JSON.stringify({ type: 'switch_model', questionType: questionType }));
+            }
+            // Send start message to trigger Deepgram connection
             this.ws.send('start');
         };
 
@@ -534,6 +645,8 @@ class CFillApp {
                         } else {
                             this.currentTranscript = data.text;
                         }
+                        // Display raw transcript - number conversion happens in processTranscript
+                        // Don't convert here because Flux may still be refining (e.g., "nine" -> "Ryan")
                         this.transcriptFinal.textContent = this.currentTranscript;
                         this.transcriptInterim.textContent = '';
                         // Clear stability timer on final transcript
@@ -564,6 +677,8 @@ class CFillApp {
                                 }
                             }, 2000);
                         }
+                        // Display raw interim transcript - don't convert numbers yet
+                        // Flux refines transcripts over time (e.g., "nine" may become "Ryan")
                         this.transcriptInterim.textContent = data.text;
                     }
                 }
@@ -621,8 +736,45 @@ class CFillApp {
     }
 
     async processTranscript(transcript) {
-        const question = this.questions[this.currentIndex];
+        // ECHO PROTECTION: Ignore transcripts while TTS is speaking
+        // This prevents the mic from picking up the robot voice and processing it
+        if (this.isSpeaking) {
+            console.log('Ignoring transcript while TTS is speaking:', transcript);
+            this.currentTranscript = '';
+            return;
+        }
+
         const text = transcript.toLowerCase().trim();
+
+        // Check for review NAVIGATION mode (on review screen, listening for "fix closing date" etc.)
+        if (this.reviewNavigationMode) {
+            const handled = this.handleReviewNavigation(transcript);
+            if (handled) {
+                this.currentTranscript = '';
+                return;
+            }
+            // Didn't understand - prompt again and keep listening
+            this.speak("I didn't understand. Which question would you like to fix? Or say 'fill' to proceed.");
+            this.currentTranscript = '';
+            this.startRecording();
+            return;
+        }
+
+        // Check for review choice mode FIRST (after all questions answered)
+        if (this.reviewChoiceMode) {
+            const handled = this.handleReviewChoice(transcript);
+            if (handled) {
+                this.currentTranscript = '';
+                return;
+            }
+            // Didn't understand - prompt again and keep listening
+            this.speak("Sorry, I didn't catch that. Say 'review' to see your answers, or 'fill' to proceed.");
+            this.currentTranscript = '';
+            this.startRecording();
+            return;
+        }
+
+        const question = this.questions[this.currentIndex];
 
         // Check for voice commands FIRST before processing as an answer
         const command = this.checkForCommand(text);
@@ -648,18 +800,53 @@ class CFillApp {
                 return;
             }
 
-            // Standard matching: Match transcript to choice options
+            // IMPROVED MATCHING: Prioritize clear yes/no at the start of the answer
+            // and use whole-word matching to avoid false positives
             let bestMatch = null;
             let bestScore = 0;
 
-            question.options.forEach(option => {
-                // Check keywords
-                const matchCount = option.keywords.filter(keyword =>
-                    text.includes(keyword.toLowerCase())
-                ).length;
+            // First, check for clear yes/no at the beginning (highest priority)
+            const startsWithYes = /^(yes|yeah|yep|yup|correct|right|sure|affirmative)\b/i.test(text);
+            const startsWithNo = /^(no|nope|nah|negative|not|none)\b/i.test(text);
 
-                if (matchCount > bestScore) {
-                    bestScore = matchCount;
+            question.options.forEach(option => {
+                let score = 0;
+
+                // Give high priority to matching the leading yes/no
+                if (startsWithYes && option.value === 'yes') {
+                    score += 100; // Strong signal: user started with yes
+                } else if (startsWithNo && option.value === 'no') {
+                    score += 100; // Strong signal: user started with no
+                }
+
+                // Check keywords with whole-word matching (avoid "refundable" in "non-refundable")
+                option.keywords.forEach(keyword => {
+                    const keywordLower = keyword.toLowerCase();
+                    // Use word boundary check for single words, or simple includes for phrases
+                    if (keyword.includes(' ')) {
+                        // Multi-word phrase - use simple includes
+                        if (text.includes(keywordLower)) {
+                            score += 1;
+                        }
+                    } else {
+                        // Single word - use word boundary regex to avoid partial matches
+                        const wordBoundaryRegex = new RegExp(`\\b${keywordLower}\\b`, 'i');
+                        if (wordBoundaryRegex.test(text)) {
+                            // Extra logic: don't match "refundable" if preceded by "non" or "non-"
+                            if (keywordLower === 'refundable') {
+                                const hasNonPrefix = /\bnon-?refundable\b/i.test(text);
+                                if (hasNonPrefix) {
+                                    // Don't count this as a match for "refundable" - it's "non-refundable"
+                                    return;
+                                }
+                            }
+                            score += 1;
+                        }
+                    }
+                });
+
+                if (score > bestScore) {
+                    bestScore = score;
                     bestMatch = option;
                 }
             });
@@ -683,7 +870,21 @@ class CFillApp {
                     display: `$${number.toLocaleString()}`,
                     fieldName: question.fieldName
                 };
-                this.showAnswer(`$${number.toLocaleString()}`);
+
+                // Read back important currency amounts for verification (hands-free safety)
+                const readBackFields = ['purchase_price', 'nonrefundable_deposit_amount', 'warranty_cost_max', 'closing_costs_amount'];
+                if (readBackFields.includes(question.id)) {
+                    // Don't auto-advance yet - read back first, then advance
+                    await this.showAnswer(`$${number.toLocaleString()}`, false);
+                    await this.speak(`${this.formatCurrencyForSpeech(number)}. Say 'go back' to fix, or I'll continue.`);
+                    // Brief pause for user to object, then auto-advance
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    if (this.conversationMode) {
+                        this.nextQuestion();
+                    }
+                } else {
+                    await this.showAnswer(`$${number.toLocaleString()}`);
+                }
                 this.nextBtn.disabled = false;
             } else {
                 this.showToast('Please say a number', false);
@@ -929,17 +1130,34 @@ class CFillApp {
             day = dayMatch[1].padStart(2, '0');
         }
 
-        // Find time - look for patterns like "5pm", "5:00pm", "5 pm", "at 5"
+        // Find time - look for patterns like "5pm", "5:00pm", "5 pm", "at 5", or spelled out "five pm"
         let time = null;
         let ampm = null;
 
+        // Number words for time (1-12)
+        const hourWords = {
+            'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
+            'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+            'eleven': '11', 'twelve': '12', 'noon': '12', 'midnight': '12'
+        };
+
+        // Convert spelled-out hours to digits in text for matching
+        let timeText = lowerText;
+        for (const [word, digit] of Object.entries(hourWords)) {
+            // Match "five pm", "five p.m.", "at five", etc.
+            const wordPattern = new RegExp(`\\b${word}\\s*(am|pm|a\\.m\\.|p\\.m\\.|o'?clock)?`, 'gi');
+            timeText = timeText.replace(wordPattern, (_, meridiem) => {
+                return meridiem ? `${digit} ${meridiem}` : digit;
+            });
+        }
+
         // First try to match time with explicit am/pm (most reliable)
         // Look for patterns like "5pm", "5:00 pm", "5 p.m."
-        let timeMatch = lowerText.match(/(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
+        let timeMatch = timeText.match(/(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
 
         // If no explicit am/pm, look for "at X" or "at X o'clock" pattern (time-specific context)
         if (!timeMatch) {
-            timeMatch = lowerText.match(/at\s+(\d{1,2})(?::(\d{2}))?(?:\s*o'?clock)?/i);
+            timeMatch = timeText.match(/at\s+(\d{1,2})(?::(\d{2}))?(?:\s*o'?clock)?/i);
         }
 
         if (timeMatch) {
@@ -1149,6 +1367,7 @@ class CFillApp {
     // "seven two seven six two" -> "72762"
     // "fifty eight zero five" -> "5805"
     // "one two three" -> "123"
+    // "four fifty seven" -> "457" (address style)
     convertSpokenNumbersToDigits(text) {
         // Single digit words
         const singleDigits = {
@@ -1164,7 +1383,21 @@ class CFillApp {
             'nine': '9'
         };
 
-        // Compound number words (tens)
+        // Number words for address-style numbers (one through nineteen)
+        const onesAndTeens = {
+            'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+            'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+            'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
+            'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19
+        };
+
+        // Tens place words
+        const tensWords = {
+            'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+            'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90
+        };
+
+        // Compound number words (tens) - for display
         const tens = {
             'ten': '10',
             'eleven': '11',
@@ -1186,9 +1419,34 @@ class CFillApp {
             'ninety': '90'
         };
 
-        // First pass: convert compound numbers like "fifty eight" -> "58"
-        // Match patterns like "fifty eight", "twenty one", etc.
         let processed = text;
+
+        // FIRST: Handle address-style numbers like "four fifty seven" -> "457"
+        // Pattern: [one-nine] [twenty-ninety] [one-nine]? (e.g., "four fifty seven")
+        // This is how people say street numbers: "four fifty seven Oak Street"
+        const addressPattern = /\b(one|two|three|four|five|six|seven|eight|nine)\s+(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s+(one|two|three|four|five|six|seven|eight|nine))?\b/gi;
+        processed = processed.replace(addressPattern, (match, hundreds, tensWord, ones) => {
+            const hundredsVal = onesAndTeens[hundreds.toLowerCase()] * 100;
+            const tensVal = tensWords[tensWord.toLowerCase()];
+            const onesVal = ones ? onesAndTeens[ones.toLowerCase()] : 0;
+            return String(hundredsVal + tensVal + onesVal);
+        });
+
+        // Handle "X hundred Y" patterns (e.g., "four hundred fifty seven")
+        const hundredPattern = /\b(one|two|three|four|five|six|seven|eight|nine)\s+hundred(?:\s+(?:and\s+)?(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s+(one|two|three|four|five|six|seven|eight|nine))?)?(?:\s+(?:and\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen))?\b/gi;
+        processed = processed.replace(hundredPattern, (match, hundreds, tensWord, tensOnes, teens) => {
+            let value = onesAndTeens[hundreds.toLowerCase()] * 100;
+            if (tensWord) {
+                value += tensWords[tensWord.toLowerCase()];
+                if (tensOnes) {
+                    value += onesAndTeens[tensOnes.toLowerCase()];
+                }
+            }
+            if (teens) {
+                value += onesAndTeens[teens.toLowerCase()];
+            }
+            return String(value);
+        });
 
         // Handle "X-ty Y" patterns (twenty one, fifty eight, etc.)
         const compoundPattern = /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\s+(one|two|three|four|five|six|seven|eight|nine)\b/gi;
@@ -1450,7 +1708,9 @@ class CFillApp {
                 'what choices do i have', 'what are the choices'
             ],
             'skip': [
-                'skip', 'skip this', 'next', 'move on', 'pass', 'skip question'
+                'skip', 'skip this', 'next', 'move on', 'pass', 'skip question',
+                'nothing', 'no thanks', 'not at this time',
+                'no additional', 'no other', 'that is all', "that's all", "that's it"
             ],
             'start_over': [
                 'start over', 'start again', 'restart', 'begin again', 'from the beginning'
@@ -1550,10 +1810,17 @@ class CFillApp {
     }
 
     extractNumber(text) {
-        // First, try to find a numeric value directly (like "450000" or "450,000")
-        const numericMatch = text.replace(/[,\s]/g, '').match(/\d+/);
-        if (numericMatch) {
-            return parseInt(numericMatch[0]);
+        const lowerText = text.toLowerCase();
+
+        // Check if text contains multiplier words - if so, process as mixed format
+        const hasMultiplier = /\b(hundred|thousand|million|billion)\b/i.test(lowerText);
+
+        // If no multiplier words, try simple numeric extraction
+        if (!hasMultiplier) {
+            const numericMatch = text.replace(/[,\s]/g, '').match(/\d+/);
+            if (numericMatch) {
+                return parseInt(numericMatch[0]);
+            }
         }
 
         // Convert words to numbers
@@ -1574,7 +1841,7 @@ class CFillApp {
         };
 
         // Clean and tokenize
-        const words = text.toLowerCase()
+        const words = lowerText
             .replace(/dollars?/g, '')
             .replace(/[.,]/g, '')
             .replace(/\band\b/g, ' ')
@@ -1585,7 +1852,10 @@ class CFillApp {
         let current = 0;
 
         for (const word of words) {
-            if (wordNumbers[word] !== undefined) {
+            // Handle raw digits (e.g., "5" in "5 thousand")
+            if (/^\d+$/.test(word)) {
+                current += parseInt(word);
+            } else if (wordNumbers[word] !== undefined) {
                 current += wordNumbers[word];
             } else if (word === 'hundred') {
                 current *= 100;
@@ -1606,6 +1876,32 @@ class CFillApp {
 
         result += current;
         return result > 0 ? result : null;
+    }
+
+    // Format currency for natural speech (e.g., 350000 -> "three hundred fifty thousand dollars")
+    formatCurrencyForSpeech(amount) {
+        if (amount >= 1000000) {
+            const millions = Math.floor(amount / 1000000);
+            const remainder = amount % 1000000;
+            if (remainder === 0) {
+                return `${millions} million dollars`;
+            } else if (remainder >= 1000) {
+                const thousands = Math.floor(remainder / 1000);
+                return `${millions} million ${thousands} thousand dollars`;
+            } else {
+                return `${millions} million ${remainder} dollars`;
+            }
+        } else if (amount >= 1000) {
+            const thousands = Math.floor(amount / 1000);
+            const remainder = amount % 1000;
+            if (remainder === 0) {
+                return `${thousands} thousand dollars`;
+            } else {
+                return `${thousands} thousand ${remainder} dollars`;
+            }
+        } else {
+            return `${amount} dollars`;
+        }
     }
 
     previousQuestion(clearAnswer = false) {
@@ -1667,52 +1963,367 @@ class CFillApp {
             this.reviewIssues = [];
         }
 
-        // Populate answers list
-        this.answersList.innerHTML = '';
+        // AUTO-APPLY AI CORRECTIONS
+        // Store original values for undo capability
+        this.originalAnswers = JSON.parse(JSON.stringify(this.answers));
+        this.correctedFields = {};  // Track which fields were auto-corrected
 
-        // Show issues at the top if any were found
         if (this.reviewIssues.length > 0) {
-            const issuesBox = document.createElement('div');
-            issuesBox.className = 'review-issues-inline';
-            issuesBox.innerHTML = `
-                <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:20px;">
-                    <h3 style="color:#ef4444;margin:0 0 12px 0;font-size:16px;">Found ${this.reviewIssues.length} Issue${this.reviewIssues.length > 1 ? 's' : ''} to Review</h3>
-                    ${this.reviewIssues.map(issue => `
-                        <div style="background:white;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid ${issue.severity === 'error' ? '#ef4444' : '#f59e0b'};">
-                            <strong>${this.formatFieldName(issue.field)}</strong>
-                            <p style="margin:4px 0 0 0;font-size:14px;color:#64748b;">${issue.description}</p>
-                            ${issue.suggestion ? `<p style="margin:4px 0 0 0;font-size:13px;color:#22c55e;font-style:italic;">Suggestion: ${issue.suggestion}</p>` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            this.answersList.appendChild(issuesBox);
+            for (const issue of this.reviewIssues) {
+                if (issue.corrected && this.answers[issue.field]) {
+                    // Store the original value
+                    this.correctedFields[issue.field] = {
+                        original: this.answers[issue.field].display,
+                        corrected: issue.corrected,
+                        description: issue.description
+                    };
 
-            await this.speak(`I found ${this.reviewIssues.length} issue${this.reviewIssues.length > 1 ? 's' : ''} you should review. Take a look at the highlighted items.`);
-        } else {
-            await this.speak("Everything looks good! Take a look at your answers. Tap Fill Contract when you're ready.");
+                    // Apply the AI correction
+                    this.answers[issue.field].value = issue.corrected;
+                    this.answers[issue.field].display = issue.corrected;
+                    console.log(`Auto-corrected ${issue.field}: "${this.correctedFields[issue.field].original}" → "${issue.corrected}"`);
+                }
+            }
         }
 
-        this.questions.forEach(question => {
+        // Announce fixes (if any)
+        const correctedCount = Object.keys(this.correctedFields).length;
+        if (correctedCount > 0) {
+            await this.speak(`I fixed ${correctedCount} issue${correctedCount > 1 ? 's' : ''}.`);
+        }
+
+        // Ask the simple voice question
+        await this.speak("Would you like to review the answers or fill in the contract?");
+
+        // Show visual hint while listening
+        this.answersList.innerHTML = '<p style="text-align:center;color:#64748b;">Say "review" to see answers, or "fill" to proceed...</p>';
+
+        // Listen for voice response
+        this.listenForReviewChoice();
+    }
+
+    // Listen for "review" or "fill" voice command
+    listenForReviewChoice() {
+        this.reviewChoiceMode = true;
+        this.currentTranscript = '';
+
+        // Start recording for voice command
+        this.startRecording();
+
+        // Update mic status if visible (may be on review screen without mic button)
+        if (this.micStatus) {
+            this.micStatus.textContent = 'Listening for choice...';
+        }
+    }
+
+    // Handle review choice from voice transcript
+    handleReviewChoice(transcript) {
+        const lower = transcript.toLowerCase();
+
+        // Check for fill commands
+        const fillCommands = ['fill', 'contract', 'proceed', 'go ahead', 'yes', 'continue'];
+        const reviewCommands = ['review', 'look', 'check', 'see', 'show', 'answers'];
+
+        const wantsFill = fillCommands.some(cmd => lower.includes(cmd));
+        const wantsReview = reviewCommands.some(cmd => lower.includes(cmd));
+
+        if (wantsFill && !wantsReview) {
+            // User wants to fill directly
+            console.log('Review choice: FILL');
+            this.reviewChoiceMode = false;
+            this.speak("Filling your contract now.");
+            this.proceedToFill();
+            return true;
+        } else if (wantsReview) {
+            // User wants to review answers
+            console.log('Review choice: REVIEW');
+            this.reviewChoiceMode = false;
+            this.speak("Here are your answers.");
+            this.showAnswersList();
+            return true;
+        }
+
+        // Didn't understand - keep listening
+        return false;
+    }
+
+    // Show all answers with corrected ones highlighted in green
+    async showAnswersList() {
+        this.answersList.innerHTML = '';
+
+        this.questions.forEach((question, index) => {
             const answer = this.answers[question.id];
             if (answer) {
-                // Check if this field has an issue
-                const hasIssue = this.reviewIssues.find(i => i.field === question.id);
+                // Check if this field was auto-corrected
+                const wasCorrected = this.correctedFields && this.correctedFields[question.id];
                 const item = document.createElement('div');
-                item.className = 'answer-item' + (hasIssue ? ' has-issue' : '');
-                item.innerHTML = `
-                    <p class="question">${question.question}</p>
-                    <p class="answer" style="${hasIssue ? 'color:#ef4444;font-weight:600;' : ''}">${answer.display}${hasIssue ? ' ⚠️' : ''}</p>
-                `;
+                item.className = 'answer-item';
+
+                if (wasCorrected) {
+                    // Corrected answer - GREEN highlight, no original shown
+                    item.innerHTML = `
+                        <p class="question">${question.question}</p>
+                        <p class="answer" style="color:#22c55e;font-weight:600;">${answer.display}</p>
+                    `;
+                } else {
+                    // Normal answer
+                    item.innerHTML = `
+                        <p class="question">${question.question}</p>
+                        <p class="answer">${answer.display}</p>
+                    `;
+                }
+
                 this.answersList.appendChild(item);
             }
         });
+
+        // Add visual hint for voice navigation (but audio is primary for hands-free use)
+        const navHint = document.createElement('p');
+        navHint.style.cssText = 'text-align:center;color:#64748b;margin-top:1rem;font-size:0.9rem;';
+        navHint.textContent = 'Say which question to fix, or say "fill" to proceed';
+        this.answersList.appendChild(navHint);
+
+        // Start review navigation mode - keep listening for voice commands
+        await this.speak("Say which question you'd like to fix, or say 'fill' to proceed.");
+        this.startReviewNavigation();
+    }
+
+    // Start listening for conversational navigation commands on review screen
+    startReviewNavigation() {
+        this.reviewNavigationMode = true;
+        this.reviewChoiceMode = false;
+        this.currentTranscript = '';
+        this.startRecording();
+        console.log('Review navigation mode started - listening for fix commands');
+    }
+
+    // Return to review screen with navigation mode (after editing a single question)
+    // Skips AI review since that was already done
+    async returnToReviewNavigation() {
+        this.showScreen('review');
+        this.conversationMode = false;
+
+        // Re-display the answers list (with the updated answer)
+        this.answersList.innerHTML = '';
+        this.questions.forEach((question, index) => {
+            const answer = this.answers[question.id];
+            if (answer) {
+                const wasCorrected = this.correctedFields && this.correctedFields[question.id];
+                const item = document.createElement('div');
+                item.className = 'answer-item';
+
+                if (wasCorrected) {
+                    item.innerHTML = `
+                        <p class="question">${question.question}</p>
+                        <p class="answer" style="color:#22c55e;font-weight:600;">${answer.display}</p>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <p class="question">${question.question}</p>
+                        <p class="answer">${answer.display}</p>
+                    `;
+                }
+                this.answersList.appendChild(item);
+            }
+        });
+
+        // Add visual hint
+        const navHint = document.createElement('p');
+        navHint.style.cssText = 'text-align:center;color:#64748b;margin-top:1rem;font-size:0.9rem;';
+        navHint.textContent = 'Say which question to fix, or say "fill" to proceed';
+        this.answersList.appendChild(navHint);
+
+        // Announce and resume listening
+        await this.speak("Got it. Anything else to fix, or say 'fill' to proceed.");
+        this.startReviewNavigation();
+    }
+
+    // Find a question by matching natural language speech to question text/keywords
+    // Returns the question index or -1 if not found
+    findQuestionByVoice(transcript) {
+        const lower = transcript.toLowerCase();
+        let bestMatch = -1;
+        let bestScore = 0;
+
+        // Keywords that identify question topics for fuzzy matching
+        const questionKeywords = {
+            'buyer_1_name': ['buyer', 'buyer name', 'first buyer', 'purchaser'],
+            'buyer_2_name': ['second buyer', 'other buyer', 'spouse', 'partner'],
+            'has_buyer_2': ['second buyer', 'two buyers', 'another buyer'],
+            'property_address': ['address', 'property', 'location', 'street'],
+            'purchase_price': ['price', 'purchase', 'amount', 'cost', 'how much'],
+            'property_type': ['property type', 'type of property', 'home type', 'house type'],
+            'purchase_method': ['payment', 'financing', 'pay', 'cash', 'loan'],
+            'loan_type': ['loan type', 'mortgage', 'va', 'fha', 'conventional'],
+            'usda_loan_type': ['usda', 'rural'],
+            'dual_agency': ['dual agency', 'same agent'],
+            'seller_pay_closing_costs': ['closing cost', 'seller pay'],
+            'closing_costs_amount': ['closing cost amount', 'how much closing'],
+            'has_earnest_money': ['earnest money', 'deposit'],
+            'has_nonrefundable_deposit': ['nonrefundable', 'non-refundable'],
+            'nonrefundable_deposit_amount': ['nonrefundable amount'],
+            'nonrefundable_deposit_timing': ['nonrefundable timing', 'when nonrefundable'],
+            'nonrefundable_deposit_days': ['nonrefundable days'],
+            'nonrefundable_deposit_other': ['nonrefundable other'],
+            'title_insurance_payer': ['title insurance', 'title policy', 'who pays title'],
+            'buyer_requests_survey': ['survey', 'land survey'],
+            'survey_paid_by': ['survey payment', 'who pays survey'],
+            'survey_other_description': ['survey other'],
+            'additional_items_convey': ['additional items', 'extra items', 'convey'],
+            'additional_items_list': ['items list', 'what items'],
+            'fixtures_not_convey': ['fixtures', 'not convey'],
+            'fixtures_not_convey_list': ['fixtures list'],
+            'has_contingency': ['contingency', 'contingent'],
+            'contingency_description': ['contingency description', 'what contingency'],
+            'contingency_date': ['contingency date', 'contingency deadline'],
+            'contingency_binding_type': ['escape clause', 'kick out'],
+            'contingency_removal_hours': ['contingency hours', 'removal hours'],
+            'contingency_notification_address': ['notification address'],
+            'contingency_closing_days': ['contingency closing days'],
+            'contingency_time_start': ['time constraints', 'when start'],
+            'has_home_warranty': ['home warranty', 'warranty'],
+            'warranty_specific_company': ['warranty company', 'specific warranty'],
+            'warranty_company_name': ['warranty company name'],
+            'warranty_plan_name': ['warranty plan', 'plan name'],
+            'warranty_paid_by': ['who pays warranty', 'warranty payment'],
+            'warranty_cost_max': ['warranty cost', 'warranty max', 'warranty amount'],
+            'wants_home_inspection': ['inspection', 'home inspection'],
+            'has_hoa': ['hoa', 'homeowners association', 'association'],
+            'seller_disclosure_received': ['disclosure', 'seller disclosure'],
+            'buyer_requests_disclosure_copy': ['disclosure copy'],
+            'seller_filled_disclosure': ['disclosure filled'],
+            'requests_termite_policy': ['termite', 'pest'],
+            'termite_plan_type': ['termite plan', 'termite type'],
+            'termite_other_description': ['termite other'],
+            'built_prior_1978': ['1978', 'built prior', 'older home', 'lead paint'],
+            'closing_date': ['closing date', 'close', 'closing day', 'when close'],
+            'possession_type': ['possession', 'when move in', 'move in'],
+            'other_terms': ['other terms', 'additional terms', 'other conditions'],
+            'has_real_estate_license': ['real estate license', 'license'],
+            'license_represented_by_agent': ['represented', 'agent'],
+            'license_entity_type': ['entity', 'individual'],
+            'license_buyer_or_seller': ['acting as'],
+            'contract_expiration': ['expiration', 'expire', 'contract expire', 'when expire']
+        };
+
+        this.questions.forEach((question, index) => {
+            // Only consider questions that have answers (were asked)
+            if (!this.answers[question.id]) return;
+
+            let score = 0;
+
+            // Check question text for matches
+            const questionTextLower = question.question.toLowerCase();
+            const words = lower.split(/\s+/);
+
+            words.forEach(word => {
+                if (word.length > 2 && questionTextLower.includes(word)) {
+                    score += 2;
+                }
+            });
+
+            // Check custom keywords for this question ID
+            const keywords = questionKeywords[question.id] || [];
+            keywords.forEach(keyword => {
+                if (lower.includes(keyword)) {
+                    score += 5; // Keywords are strong matches
+                }
+            });
+
+            // Exact ID mention (rare but possible)
+            if (lower.includes(question.id.replace(/_/g, ' '))) {
+                score += 10;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = index;
+            }
+        });
+
+        // Require minimum score to avoid false positives
+        return bestScore >= 2 ? bestMatch : -1;
+    }
+
+    // Handle voice commands on the review screen (fix specific questions or proceed to fill)
+    handleReviewNavigation(transcript) {
+        const lower = transcript.toLowerCase();
+
+        // Check for fill/proceed commands first
+        const fillCommands = ['fill', 'contract', 'proceed', 'go ahead', 'done', 'continue', 'that\'s all', 'finish'];
+        const wantsFill = fillCommands.some(cmd => lower.includes(cmd));
+
+        if (wantsFill) {
+            console.log('Review navigation: FILL');
+            this.reviewNavigationMode = false;
+            this.speak("Filling your contract now.");
+            this.proceedToFill();
+            return true;
+        }
+
+        // Check for fix/change/edit commands
+        const fixCommands = ['fix', 'change', 'edit', 'update', 'correct', 'modify', 'redo'];
+        const wantsFix = fixCommands.some(cmd => lower.includes(cmd));
+
+        // Try to find which question they're referring to
+        const questionIndex = this.findQuestionByVoice(transcript);
+
+        if (questionIndex >= 0) {
+            const question = this.questions[questionIndex];
+            console.log(`Review navigation: Fixing question ${question.id} at index ${questionIndex}`);
+
+            // Go to that specific question
+            this.reviewNavigationMode = false;
+            this.editSingleAnswer(questionIndex);
+            return true;
+        }
+
+        // If they said "fix" but we couldn't identify the question
+        if (wantsFix) {
+            this.speak("Which question would you like to fix?");
+            this.startRecording();
+            return true; // Handled, but keep listening
+        }
+
+        // Didn't understand
+        return false;
+    }
+
+    // Edit a single answer and return to review
+    editSingleAnswer(questionIndex) {
+        this.currentIndex = questionIndex;
+        this.editingFromReview = true;  // Flag to return to review after answering
+        this.conversationMode = false;  // Don't auto-advance
+        this.showScreen('question');
+        this.showQuestion();
     }
 
     editAnswers() {
+        // Start from beginning for full edit mode
         this.currentIndex = 0;
+        this.editingFromReview = false;
+        this.fixIssuesMode = false;
+        this.conversationMode = true;
         this.showScreen('question');
         this.showQuestion();
+    }
+
+    // Fix Issues Mode: Only re-ask questions that have problems
+    async startFixIssuesMode() {
+        if (this.issueQuestionIds.length === 0) {
+            this.showToast('No issues to fix!', false);
+            return;
+        }
+
+        this.fixIssuesMode = true;
+        this.editingFromReview = false;
+        this.conversationMode = true;  // Enable auto-advance between issue questions
+        this.currentIndex = 0;  // Start from beginning (showQuestion will skip to first issue)
+
+        await this.speak(`Let's fix ${this.issueQuestionIds.length} issue${this.issueQuestionIds.length > 1 ? 's' : ''}.`);
+
+        this.showScreen('question');
+        this.showQuestion();  // Will skip to the first question with an issue
     }
 
     async submitAnswers() {
@@ -1831,6 +2442,12 @@ class CFillApp {
     restart() {
         this.currentIndex = 0;
         this.answers = {};
+        this.fixIssuesMode = false;
+        this.issueQuestionIds = [];
+        this.editingFromReview = false;
+        this.correctedFields = {};
+        this.originalAnswers = {};
+        this.reviewChoiceMode = false;
         this.showScreen('start');
     }
 

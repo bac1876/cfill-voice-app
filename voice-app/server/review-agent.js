@@ -99,6 +99,16 @@ COMMON VOICE INPUT ERRORS TO WATCH FOR:
 - **SPOKEN NUMBERS IN ADDRESSES** - "seven two seven six two" should be "72762". Any sequence of number words (zero/one/two/three/four/five/six/seven/eight/nine) in an address is an ERROR that needs to be converted to digits. Flag this as a CRITICAL error!
 - **DUPLICATE CONSECUTIVE WORDS** - "Arkansas Arkansas" or "Rogers Rogers" or "Street Street" - voice transcription sometimes repeats words. This is a CRITICAL ERROR. Check ALL fields for duplicate consecutive words like "word word" patterns. The fix is to remove the duplicate.
 
+**CRITICAL SPELLING/TRANSCRIPTION ERRORS IN CONTRACT TEXT** (ALWAYS flag as ERRORS):
+- "Cellar" should be "Seller" - this is a CRITICAL homophone error in contracts
+- "2" used as "to" in phrases like "agrees 2 pay" - should be "agrees to pay"
+- "4" used as "for" in phrases like "4 the buyer"
+- "bye/by" when it should be "buy/buyer"
+- Numbers appearing where words should be (e.g., "2" instead of "to", "4" instead of "for")
+- "principal" vs "principle" in wrong context
+- Any word that sounds like another but is wrong for the context
+- **READ THE ACTUAL TEXT carefully** - if something doesn't make sense grammatically, it's likely a transcription error
+
 CONTRACT ANSWERS:
 ${answersJson}
 
@@ -111,12 +121,20 @@ ISSUE: [field_name]
 TYPE: [spelling|missing|date_logic|number|address|consistency|time|email|other]
 SEVERITY: [error|warning]
 DESCRIPTION: [what's wrong]
-SUGGESTION: [how to fix it]
+ORIGINAL: [the original value from the contract]
+CORRECTED: [the corrected value you recommend - REQUIRED for all issues]
 
 End with:
 SUMMARY: [one sentence summary - either "No issues found" or "Found X issues that should be reviewed"]
 
-Be thorough but practical. Flag real problems, especially invalid times (like 25:00) and impossible numbers. Arkansas addresses don't always need zip codes for the contract to be valid.`;
+IMPORTANT: For EVERY issue, you MUST provide both ORIGINAL and CORRECTED values. The CORRECTED value should be your best guess at what the user meant to say. Examples:
+- If "25:00" is invalid time, CORRECTED should be "5:00" (likely meant 5 o'clock)
+- If "Arkansas Arkansas" has duplicate words, CORRECTED should be "Arkansas"
+- If address missing zip code, CORRECTED should include a reasonable zip code for that Arkansas city
+- If "Cellar" should be "Seller", CORRECTED should have "Seller"
+- If "agrees 2 pay" has number-for-word error, CORRECTED should be "agrees to pay"
+
+Be thorough but practical. Flag real problems, especially invalid times (like 25:00) and impossible numbers.`;
 }
 
 function parseReviewResponse(responseText) {
@@ -135,8 +153,9 @@ function parseReviewResponse(responseText) {
             const fieldMatch = block.match(/^\s*(\S+)/);
             const typeMatch = block.match(/TYPE:\s*(\w+)/i);
             const severityMatch = block.match(/SEVERITY:\s*(\w+)/i);
-            const descMatch = block.match(/DESCRIPTION:\s*(.+?)(?=SUGGESTION:|ISSUE:|SUMMARY:|$)/is);
-            const suggestionMatch = block.match(/SUGGESTION:\s*(.+?)(?=ISSUE:|SUMMARY:|$)/is);
+            const descMatch = block.match(/DESCRIPTION:\s*(.+?)(?=ORIGINAL:|SUGGESTION:|ISSUE:|SUMMARY:|$)/is);
+            const originalMatch = block.match(/ORIGINAL:\s*(.+?)(?=CORRECTED:|ISSUE:|SUMMARY:|$)/is);
+            const correctedMatch = block.match(/CORRECTED:\s*(.+?)(?=ISSUE:|SUMMARY:|$)/is);
 
             if (fieldMatch) {
                 issues.push({
@@ -144,7 +163,8 @@ function parseReviewResponse(responseText) {
                     type: typeMatch ? typeMatch[1].trim().toLowerCase() : 'other',
                     severity: severityMatch ? severityMatch[1].trim().toLowerCase() : 'warning',
                     description: descMatch ? descMatch[1].trim() : 'Issue detected',
-                    suggestion: suggestionMatch ? suggestionMatch[1].trim() : ''
+                    original: originalMatch ? originalMatch[1].trim() : '',
+                    corrected: correctedMatch ? correctedMatch[1].trim() : ''
                 });
             }
         }

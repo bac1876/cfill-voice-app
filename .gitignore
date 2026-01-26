@@ -34,3 +34,15 @@ NUL
 # Large text/html dumps (not needed for functionality)
 *.txt
 contract-form*.html
+
+# SSL certificates (generated locally)
+voice-app/certs/
+
+# Test files and results
+voice-app/server/test-*.js
+voice-app/server/*-test-results.json
+voice-app/server/test-results.json
+voice-app/server/test-audio/
+
+# Claude temp files
+tmpclaude-*

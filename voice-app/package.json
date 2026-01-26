@@ -5,7 +5,11 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node server/index.js"
+    "dev": "node server/index.js",
+    "test": "node server/test-review-agent.js && node server/test-pipeline.js",
+    "test:review": "node server/test-review-agent.js",
+    "test:pipeline": "node server/test-pipeline.js",
+    "test:voice": "node server/comprehensive-voice-test.js"
   },
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",

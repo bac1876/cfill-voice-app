@@ -1,5 +1,6 @@
 const express = require('express');
 const { createServer } = require('http');
+const { createServer: createHttpsServer } = require('https');
 const { WebSocketServer, WebSocket } = require('ws');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -18,6 +19,23 @@ const { reviewContractAnswers } = require('./review-agent');
 
 const app = express();
 const server = createServer(app);
+
+// HTTPS server for mobile (iPhone requires HTTPS for microphone access)
+let httpsServer = null;
+const certsPath = path.join(__dirname, '../certs');
+const keyPath = path.join(certsPath, 'key.pem');
+const certPath = path.join(certsPath, 'cert.pem');
+
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    const httpsOptions = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+    };
+    httpsServer = createHttpsServer(httpsOptions, app);
+    console.log('HTTPS server enabled (for mobile mic access)');
+} else {
+    console.log('HTTPS certs not found - mobile mic access may not work');
+}
 
 // API keys - set in .env file
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || '';
@@ -210,73 +228,99 @@ app.post('/api/fill-contract', async (req, res) => {
 });
 
 // WebSocket server for real-time voice transcription
+// HYBRID MODE: Nova for short answers (choice, currency, date), Flux for long answers (text, addresses)
 const wss = new WebSocketServer({ server, path: '/transcribe' });
 
-wss.on('connection', (clientWs) => {
-    console.log('Client connected for transcription');
+// Also attach WebSocket to HTTPS server if available
+let wssHttps = null;
+if (httpsServer) {
+    wssHttps = new WebSocketServer({ server: httpsServer, path: '/transcribe' });
+}
+
+// Question types that use Nova (short answers)
+const NOVA_QUESTION_TYPES = ['choice', 'currency', 'date', 'number'];
+// Question types that use Flux (long answers)
+const FLUX_QUESTION_TYPES = ['text', 'datetime'];
+
+wss.on('connection', (clientWs, req) => {
+    const clientIP = req.socket.remoteAddress;
+    console.log(`\n[WS] Client connected from ${clientIP} (HYBRID: Nova + Flux)`);
 
     let deepgramWs = null;
     let deepgramReady = false;
-    let audioQueue = []; // Buffer audio until Deepgram is ready
+    let audioQueue = [];
+    let currentModel = 'nova'; // Start with Nova, will switch based on question type
 
-    // Connect to Deepgram Flux for conversational turn detection
-    const connectToDeepgram = () => {
+    // Keyterms to boost recognition
+    // NOTE: Removed short words (VA, Drive, Lane, Street) that interfere with number recognition
+    // "five" was being heard as "Drive", "seven" as "VA", "three" as "Street"
+    // NOTE: Removed "Centerton" as it interferes with "entity" recognition
+    // NOTE: Removed "Fort Smith" as "Fort" interferes with "forty" recognition
+    const keyterms = [
+        // Arkansas cities (longer words less likely to interfere)
+        // Removed: Centerton (sounds like "entity"), Fort Smith ("Fort" sounds like "forty")
+        'Arkansas', 'Bentonville', 'Rogers', 'Fayetteville', 'Springdale', 'Lowell',
+        'Bella Vista', 'Siloam Springs', 'Little Rock',
+        // Real estate terms
+        'contingency', 'earnest', 'escrow', 'convey', 'fixtures', 'closing',
+        'appraisal', 'inspection', 'mortgage', 'conventional', 'financing',
+        // Loan types - use full names to avoid false matches
+        'FHA loan', 'VA loan', 'USDA loan', 'conventional loan', 'cash purchase',
+        // Common answer words (avoid "fire" instead of "buyer")
+        'buyer', 'seller', 'both', 'neither',
+        'refundable', 'nonrefundable', 'non-refundable',
+        'dual agency', 'single agency',
+        // Days and time units
+        'days', 'hours', 'business days', 'calendar days',
+        // Business entity types (for license questions)
+        'entity', 'individual', 'LLC', 'corporation', 'company',
+        // Number words that get misheard (boost to prevent "Fort" instead of "forty")
+        'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'
+    ];
+
+    // Connect to Nova (v1 endpoint) - fast for short answers
+    const connectToNova = () => {
         if (!DEEPGRAM_API_KEY) {
-            console.error('No Deepgram API key!');
-            clientWs.send(JSON.stringify({
-                error: 'Deepgram API key not configured'
-            }));
+            clientWs.send(JSON.stringify({ error: 'Deepgram API key not configured' }));
             return;
         }
 
-        console.log('Connecting to Deepgram Flux...');
-
-        // Use Flux - Deepgram's conversational speech recognition model
-        // Flux has built-in turn detection and is optimized for voice agents
-        // Uses the /v2/listen endpoint - only supports specific parameters
-        // See: https://developers.deepgram.com/reference/speech-to-text/listen-flux
-
-        // Keyterms to boost recognition of real estate and Arkansas-specific terms
-        const keyterms = [
-            // Arkansas cities
-            'Arkansas', 'Bentonville', 'Rogers', 'Fayetteville', 'Springdale', 'Lowell',
-            'Bella Vista', 'Centerton', 'Siloam Springs', 'Little Rock', 'Fort Smith',
-            // Real estate terms
-            'contingency', 'earnest', 'escrow', 'convey', 'fixtures', 'closing',
-            'appraisal', 'inspection', 'mortgage', 'conventional', 'financing',
-            // Street types
-            'Street', 'Avenue', 'Drive', 'Lane', 'Road', 'Boulevard', 'Court', 'Circle', 'Way'
-        ];
+        console.log('[NOVA] Connecting for short answers...');
 
         const params = new URLSearchParams({
-            model: 'flux-general-en',     // English-only conversational model
+            model: 'nova-2',
             encoding: 'linear16',
             sample_rate: '16000',
-            eot_threshold: '0.6',         // End-of-turn confidence threshold (0.5-0.9) - lowered for short responses
-            eager_eot_threshold: '0.4',   // Eager end-of-turn for faster response (0.3-0.9) - lowered for short responses
-            eot_timeout_ms: '3000'        // End-of-turn timeout (500-10000ms, default 5000) - shorter for responsiveness
+            punctuate: 'true',
+            smart_format: 'true',
+            numerals: 'true',  // Convert spoken numbers to digits
+            interim_results: 'true',
+            utterance_end_ms: '1000',  // Fast end detection for short answers
+            vad_events: 'true'
         });
 
-        // Add keyterms (each as separate parameter)
-        keyterms.forEach(term => params.append('keyterm', term));
+        // Add keywords for Nova - use moderate boost to avoid interference with numbers
+        // Higher boost only for multi-word terms that won't be confused with numbers
+        const highPriorityTerms = ['buyer', 'seller', 'FHA loan', 'VA loan', 'USDA loan'];
+        keyterms.forEach(term => {
+            const boost = highPriorityTerms.includes(term) ? ':3' : ':1';
+            params.append('keywords', term + boost);
+        });
 
-        const deepgramUrl = 'wss://api.deepgram.com/v2/listen?' + params;
+        const novaUrl = 'wss://api.deepgram.com/v1/listen?' + params;
 
-        deepgramWs = new WebSocket(deepgramUrl, {
-            headers: {
-                Authorization: `Token ${DEEPGRAM_API_KEY}`
-            }
+        deepgramWs = new WebSocket(novaUrl, {
+            headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` }
         });
 
         deepgramWs.on('open', () => {
-            console.log('Connected to Deepgram Flux - ready for audio');
+            console.log('[NOVA] Connected - ready for short answers');
             deepgramReady = true;
-            clientWs.send(JSON.stringify({ status: 'ready' }));
+            currentModel = 'nova';
+            clientWs.send(JSON.stringify({ status: 'ready', model: 'nova' }));
 
-            // Send any queued audio
             while (audioQueue.length > 0) {
-                const audioData = audioQueue.shift();
-                deepgramWs.send(audioData);
+                deepgramWs.send(audioQueue.shift());
             }
         });
 
@@ -284,58 +328,13 @@ wss.on('connection', (clientWs) => {
             try {
                 const response = JSON.parse(data.toString());
 
-                // Log raw Flux messages for debugging
-                console.log('Flux event:', response.event || response.type, '| transcript:', response.transcript || '');
-
-                // Handle Flux events (uses 'event' field instead of 'type')
-                if (response.event) {
-                    const transcript = response.transcript || '';
-
-                    // Update, StartOfTurn, EagerEndOfTurn, EndOfTurn all have transcripts
-                    if (transcript) {
-                        const isEndOfTurn = response.event === 'EndOfTurn';
-                        const isEagerEndOfTurn = response.event === 'EagerEndOfTurn';
-
-                        console.log(`Flux ${response.event}: "${transcript}"`);
-                        clientWs.send(JSON.stringify({
-                            type: 'transcript',
-                            text: transcript,
-                            isFinal: isEndOfTurn || isEagerEndOfTurn,
-                            speechFinal: isEndOfTurn
-                        }));
-                    }
-
-                    // Handle turn events
-                    if (response.event === 'EndOfTurn') {
-                        console.log('Flux: End of turn detected');
-                        clientWs.send(JSON.stringify({
-                            type: 'end_of_turn'
-                        }));
-                    } else if (response.event === 'EagerEndOfTurn') {
-                        console.log('Flux: Eager end of turn - user may be done');
-                        clientWs.send(JSON.stringify({
-                            type: 'eager_end_of_turn'
-                        }));
-                    } else if (response.event === 'TurnResumed') {
-                        console.log('Flux: Turn resumed - user continued speaking');
-                        clientWs.send(JSON.stringify({
-                            type: 'turn_resumed'
-                        }));
-                    } else if (response.event === 'StartOfTurn') {
-                        console.log('Flux: Start of turn');
-                        clientWs.send(JSON.stringify({
-                            type: 'start_of_turn'
-                        }));
-                    }
-                }
-                // Fallback for Nova-2 style responses (if using v1 endpoint)
-                else if (response.type === 'Results') {
+                if (response.type === 'Results') {
                     const transcript = response.channel?.alternatives?.[0]?.transcript || '';
                     const isFinal = response.is_final;
                     const speechFinal = response.speech_final;
 
                     if (transcript) {
-                        console.log(`Transcript (final=${isFinal}): "${transcript}"`);
+                        console.log(`[NOVA] ${isFinal ? 'Final' : 'Interim'}: "${transcript}"`);
                         clientWs.send(JSON.stringify({
                             type: 'transcript',
                             text: transcript,
@@ -345,44 +344,210 @@ wss.on('connection', (clientWs) => {
                     }
 
                     if (speechFinal) {
-                        console.log('Speech final detected');
-                        clientWs.send(JSON.stringify({
-                            type: 'end_of_turn'
-                        }));
+                        console.log('[NOVA] Speech final - end of utterance');
+                        clientWs.send(JSON.stringify({ type: 'end_of_turn' }));
                     }
                 }
+
+                // Handle UtteranceEnd event
+                if (response.type === 'UtteranceEnd') {
+                    console.log('[NOVA] Utterance end detected');
+                    clientWs.send(JSON.stringify({ type: 'utterance_end' }));
+                }
             } catch (err) {
-                console.error('Error parsing Deepgram response:', err);
+                console.error('[NOVA] Error parsing response:', err);
             }
         });
 
         deepgramWs.on('error', (err) => {
-            console.error('Deepgram WebSocket error:', err.message);
-            clientWs.send(JSON.stringify({ error: 'Transcription error: ' + err.message }));
+            console.error('[NOVA] WebSocket error:', err.message);
+            clientWs.send(JSON.stringify({ error: 'Nova error: ' + err.message }));
         });
 
-        deepgramWs.on('close', (code, reason) => {
-            console.log(`Deepgram connection closed: ${code} - ${reason}`);
+        deepgramWs.on('close', (code) => {
+            console.log(`[NOVA] Connection closed: ${code}`);
             deepgramReady = false;
         });
     };
 
-    // Connect to Deepgram immediately when client connects
-    connectToDeepgram();
-
-    // Handle messages from client (audio data)
-    clientWs.on('message', (data) => {
-        // Skip text messages like "start"
-        if (typeof data === 'string' || data.toString() === 'start') {
-            console.log('Received start message from client');
+    // Connect to Flux (v2 endpoint) - better turn detection for long answers
+    const connectToFlux = () => {
+        if (!DEEPGRAM_API_KEY) {
+            clientWs.send(JSON.stringify({ error: 'Deepgram API key not configured' }));
             return;
         }
 
-        // Queue or send audio data
+        console.log('[FLUX] Connecting for long answers...');
+
+        const params = new URLSearchParams({
+            model: 'flux-general-en',
+            encoding: 'linear16',
+            sample_rate: '16000',
+            eot_threshold: '0.6',
+            eager_eot_threshold: '0.4',
+            eot_timeout_ms: '3000'
+        });
+
+        keyterms.forEach(term => params.append('keyterm', term));
+
+        const fluxUrl = 'wss://api.deepgram.com/v2/listen?' + params;
+
+        deepgramWs = new WebSocket(fluxUrl, {
+            headers: { Authorization: `Token ${DEEPGRAM_API_KEY}` }
+        });
+
+        deepgramWs.on('open', () => {
+            console.log('[FLUX] Connected - ready for long answers');
+            deepgramReady = true;
+            currentModel = 'flux';
+            clientWs.send(JSON.stringify({ status: 'ready', model: 'flux' }));
+
+            while (audioQueue.length > 0) {
+                deepgramWs.send(audioQueue.shift());
+            }
+        });
+
+        deepgramWs.on('message', (data) => {
+            try {
+                const response = JSON.parse(data.toString());
+
+                if (response.event) {
+                    const transcript = response.transcript || '';
+
+                    if (transcript) {
+                        const isEndOfTurn = response.event === 'EndOfTurn';
+                        const isEagerEndOfTurn = response.event === 'EagerEndOfTurn';
+
+                        console.log(`[FLUX] ${response.event}: "${transcript}"`);
+                        clientWs.send(JSON.stringify({
+                            type: 'transcript',
+                            text: transcript,
+                            isFinal: isEndOfTurn || isEagerEndOfTurn,
+                            speechFinal: isEndOfTurn
+                        }));
+                    }
+
+                    if (response.event === 'EndOfTurn') {
+                        console.log('[FLUX] End of turn');
+                        clientWs.send(JSON.stringify({ type: 'end_of_turn' }));
+                    } else if (response.event === 'EagerEndOfTurn') {
+                        clientWs.send(JSON.stringify({ type: 'eager_end_of_turn' }));
+                    } else if (response.event === 'TurnResumed') {
+                        clientWs.send(JSON.stringify({ type: 'turn_resumed' }));
+                    } else if (response.event === 'StartOfTurn') {
+                        clientWs.send(JSON.stringify({ type: 'start_of_turn' }));
+                    }
+                }
+            } catch (err) {
+                console.error('[FLUX] Error parsing response:', err);
+            }
+        });
+
+        deepgramWs.on('error', (err) => {
+            console.error('[FLUX] WebSocket error:', err.message);
+            clientWs.send(JSON.stringify({ error: 'Flux error: ' + err.message }));
+        });
+
+        deepgramWs.on('close', (code) => {
+            console.log(`[FLUX] Connection closed: ${code}`);
+            deepgramReady = false;
+        });
+    };
+
+    // Switch model based on question type
+    const switchModel = (questionType) => {
+        const needsFlux = FLUX_QUESTION_TYPES.includes(questionType);
+        const targetModel = needsFlux ? 'flux' : 'nova';
+
+        // If already using the right model and it's ready, do nothing
+        if (currentModel === targetModel && deepgramReady) {
+            console.log(`[HYBRID] Already using ${targetModel} for ${questionType}`);
+            return;
+        }
+
+        // If we're switching from nothing (initial connection), just connect
+        if (!deepgramWs) {
+            console.log(`[HYBRID] Initial connection to ${targetModel.toUpperCase()} for question type: ${questionType}`);
+            currentModel = targetModel;
+            if (needsFlux) {
+                connectToFlux();
+            } else {
+                connectToNova();
+            }
+            return;
+        }
+
+        console.log(`[HYBRID] Switching to ${targetModel.toUpperCase()} for question type: ${questionType}`);
+
+        // Close existing connection gracefully
+        const oldWs = deepgramWs;
+        deepgramWs = null;
+        deepgramReady = false;
+        currentModel = targetModel;
+
+        if (oldWs) {
+            oldWs.close();
+        }
+
+        // Small delay to allow clean close before reconnecting
+        setTimeout(() => {
+            // Connect to appropriate model
+            if (needsFlux) {
+                connectToFlux();
+            } else {
+                connectToNova();
+            }
+        }, 100);
+    };
+
+    // DON'T auto-connect - wait for switch_model message with question type
+    // This avoids race condition where Nova starts connecting then immediately switches to Flux
+    console.log('[HYBRID] Waiting for question type to select model...');
+
+    // Handle messages from client
+    clientWs.on('message', (data) => {
+        // Check if it's a control message (JSON)
+        if (typeof data === 'string') {
+            console.log(`[WS] Received string message: ${data.substring(0, 100)}`);
+            try {
+                const msg = JSON.parse(data);
+                if (msg.type === 'switch_model' && msg.questionType) {
+                    console.log(`[WS] Switching model for question type: ${msg.questionType}`);
+                    switchModel(msg.questionType);
+                    return;
+                }
+            } catch (e) {
+                // Not JSON, might be 'start' message
+                if (data === 'start') {
+                    console.log('[WS] Received start message');
+                    return;
+                }
+            }
+            return;
+        }
+
+        // Check for Buffer that might be a string
+        const dataStr = data.toString();
+        if (dataStr === 'start') {
+            console.log('Received start message');
+            return;
+        }
+
+        // Try to parse as JSON control message
+        try {
+            const msg = JSON.parse(dataStr);
+            if (msg.type === 'switch_model' && msg.questionType) {
+                switchModel(msg.questionType);
+                return;
+            }
+        } catch (e) {
+            // Not JSON, treat as audio data
+        }
+
+        // Send audio data
         if (deepgramReady && deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
             deepgramWs.send(data);
         } else {
-            // Buffer audio until Deepgram is ready
             audioQueue.push(data);
             console.log('Buffering audio, queue size:', audioQueue.length);
         }
@@ -390,9 +555,7 @@ wss.on('connection', (clientWs) => {
 
     clientWs.on('close', () => {
         console.log('Client disconnected');
-        if (deepgramWs) {
-            deepgramWs.close();
-        }
+        if (deepgramWs) deepgramWs.close();
     });
 
     clientWs.on('error', (err) => {
@@ -400,24 +563,72 @@ wss.on('connection', (clientWs) => {
     });
 });
 
-// Start server
+// Attach same handler to HTTPS WebSocket server
+if (wssHttps) {
+    wssHttps.on('connection', (clientWs, req) => {
+        console.log(`\n[WSS] HTTPS client connected from ${req.socket.remoteAddress}`);
+        // Re-emit to main handler logic by copying the entire handler
+        wss.emit('connection', clientWs, req);
+    });
+}
+
+// Start servers
 const PORT = process.env.PORT || 3000;
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+
+// Get local IP for display
+const getLocalIP = () => {
+    const { networkInterfaces } = require('os');
+    const nets = networkInterfaces();
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+            if (net.family === 'IPv4' && !net.internal) {
+                return net.address;
+            }
+        }
+    }
+    return 'your-computer-ip';
+};
+
+const localIP = getLocalIP();
+
 server.listen(PORT, () => {
     console.log('');
     console.log('===========================================');
     console.log('  CFILL Voice App - Contract Filler PWA');
     console.log('===========================================');
     console.log('');
-    console.log(`Server running at: http://localhost:${PORT}`);
+    console.log(`HTTP Server:  http://localhost:${PORT}`);
+    console.log(`              http://${localIP}:${PORT}`);
+    console.log('');
+});
+
+// Start HTTPS server for mobile
+if (httpsServer) {
+    httpsServer.listen(HTTPS_PORT, () => {
+        console.log(`HTTPS Server: https://localhost:${HTTPS_PORT}`);
+        console.log(`              https://${localIP}:${HTTPS_PORT}`);
+        console.log('');
+        console.log('** FOR iPHONE: Use the HTTPS URL above **');
+        console.log('   (You may need to accept the security warning)');
+        console.log('');
+        if (!DEEPGRAM_API_KEY) {
+            console.log('!! IMPORTANT: Set DEEPGRAM_API_KEY in .env file');
+            console.log('   Get free key: https://console.deepgram.com/signup');
+        }
+        console.log('===========================================');
+    });
+} else {
     console.log('');
     console.log('On your phone, open:');
-    console.log(`  http://<your-computer-ip>:${PORT}`);
+    console.log(`  http://${localIP}:${PORT}`);
     console.log('');
-    console.log('To find your IP, run: ipconfig (Windows) or ifconfig (Mac/Linux)');
+    console.log('Note: Mobile mic requires HTTPS. Generate certs:');
+    console.log('  openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes');
     console.log('');
     if (!DEEPGRAM_API_KEY) {
         console.log('!! IMPORTANT: Set DEEPGRAM_API_KEY in .env file');
         console.log('   Get free key: https://console.deepgram.com/signup');
     }
     console.log('===========================================');
-});
+}

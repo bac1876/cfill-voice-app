@@ -37,7 +37,15 @@
       "question": "What is the purchase price?",
       "hint": "Example: 450000 or four hundred fifty thousand",
       "fieldName": "Global_Info-Sale-Price-Amount_68",
-      "type": "currency"
+      "type": "currency",
+      "conditionalFieldName": {
+        "dependsOn": "purchase_method",
+        "values": {
+          "cash": "p01tf003",
+          "new_financing": "Global_Info-Sale-Price-Amount_68",
+          "loan_assumption": "Global_Info-Sale-Price-Amount_68"
+        }
+      }
     },
     {
       "id": "property_type",
@@ -131,8 +139,8 @@
       "hint": "If no check Box A, if yes then additional questions",
       "type": "choice",
       "options": [
-        { "value": "no", "label": "No nonrefundable deposit", "keywords": ["no", "none", "refundable"], "fieldName": "p04cb004_158" },
-        { "value": "yes", "label": "Yes, nonrefundable deposit", "keywords": ["yes", "nonrefundable"] }
+        { "value": "no", "label": "No nonrefundable deposit", "keywords": ["no", "none", "not"], "fieldName": "p04cb004_158" },
+        { "value": "yes", "label": "Yes, nonrefundable deposit", "keywords": ["yes", "nonrefundable", "non-refundable", "there is"] }
       ]
     },
     {
@@ -234,8 +242,8 @@
       "hint": "Items attached to property that seller is keeping",
       "type": "choice",
       "options": [
-        { "value": "yes", "label": "Yes, fixtures not conveying", "keywords": ["yes", "keeping", "not include", "exclude"] },
-        { "value": "no", "label": "No, all fixtures convey", "keywords": ["no", "all", "everything"] }
+        { "value": "yes", "label": "Yes, fixtures not conveying", "keywords": ["yes", "keeping", "not include", "exclude", "some", "certain"] },
+        { "value": "no", "label": "No, all fixtures convey", "keywords": ["no", "all convey", "all fixtures convey", "everything conveys", "none", "nothing"] }
       ]
     },
     {
@@ -273,13 +281,13 @@
     },
     {
       "id": "contingency_binding_type",
-      "question": "Is the contingency binding with or without an escape clause?",
-      "hint": "With escape clause = Box (i), without = Box (ii)",
+      "question": "Should the contingency have an escape clause or no escape clause?",
+      "hint": "Escape clause allows seller to accept backup offers. Say 'escape' or 'no escape'",
       "type": "choice",
       "showIf": { "question": "has_contingency", "value": "yes" },
       "options": [
-        { "value": "with_escape", "label": "Binding with escape clause", "keywords": ["with", "escape", "clause", "kick out"], "fieldName": "p07cb003_239" },
-        { "value": "without_escape", "label": "Binding without escape clause", "keywords": ["without", "no escape", "firm"], "fieldName": "p07cb004_240" }
+        { "value": "with_escape", "label": "With escape clause (kick-out clause)", "keywords": ["escape", "escape clause", "kick out", "kickout", "yes escape", "with escape"], "fieldName": "p07cb003_239" },
+        { "value": "without_escape", "label": "No escape clause (firm)", "keywords": ["no escape", "without escape", "firm", "no kick out", "none", "no clause"], "fieldName": "p07cb004_240" }
       ]
     },
     {
@@ -301,7 +309,7 @@
       "question": "How many calendar days after contingency removal for closing?",
       "hint": "Example: 45 days",
       "type": "number",
-      "showIf": { "question": "has_contingency", "value": "yes" }
+      "showIf": { "question": "contingency_binding_type", "value": "with_escape" }
     },
     {
       "id": "contingency_time_start",

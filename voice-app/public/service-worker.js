@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cfill-v29';
+const CACHE_NAME = 'cfill-v40';
 const urlsToCache = [
     '/',
     '/index.html',

@@ -292,16 +292,19 @@ async function fillFromVoice() {
             }
         }
 
-        // Fill purchase price (Global_Info-Sale-Price-Amount_68)
+        // Fill purchase price - different field for cash vs financing
         if (answers.purchase_price?.value) {
-            const priceField = await page.$('input[name="Global_Info-Sale-Price-Amount_68"]');
+            // Cash transactions use p01tf003, financing uses Global_Info-Sale-Price-Amount_68
+            const isCash = answers.purchase_method?.value === 'cash';
+            const priceFieldName = isCash ? 'p01tf003' : 'Global_Info-Sale-Price-Amount_68';
+            const priceField = await page.$(`input[name="${priceFieldName}"]`);
             if (priceField) {
                 await priceField.scrollIntoViewIfNeeded();
                 await page.waitForTimeout(200);
                 await priceField.fill(String(answers.purchase_price.value));
-                log(`  ✓ Purchase Price: $${answers.purchase_price.value}`);
+                log(`  ✓ Purchase Price: $${answers.purchase_price.value} (${isCash ? 'cash field' : 'financing field'})`);
             } else {
-                log('  ✗ Purchase price field not found (Global_Info-Sale-Price-Amount_68)');
+                log(`  ✗ Purchase price field not found (${priceFieldName})`);
             }
         }
 
@@ -2262,11 +2265,11 @@ async function fillFromVoice() {
 
             const submitBtn = await page.$('#add-to-new-transaction-form button[type="submit"]');
             if (submitBtn) {
-                await submitBtn.click();
+                await submitBtn.click({ timeout: 3000 });
                 log('  ✓ Clicked "Create Transaction"');
             } else {
-                // Fallback: try clicking by text
-                await page.click('button:has-text("Create Transaction")');
+                // Fallback: try clicking by text with short timeout
+                await page.click('button:has-text("Create Transaction")', { timeout: 3000 });
                 log('  ✓ Clicked "Create Transaction" via text');
             }
 
