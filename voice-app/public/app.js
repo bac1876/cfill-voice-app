@@ -1789,9 +1789,16 @@ class CFillApp {
 
         switch (command) {
             case 'go_back':
-                if (this.currentIndex > 0) {
+                // First go-back clears current answer, second goes to previous question
+                const currentQ = this.questions[this.currentIndex];
+                if (this.answers[currentQ.id]) {
+                    delete this.answers[currentQ.id];
+                    await this.speak("Okay, let's try that again.");
+                    this.answerDisplay.classList.add('hidden');
+                    this.showQuestion();
+                } else if (this.currentIndex > 0) {
                     await this.speak("Okay, going back.");
-                    this.previousQuestion(true);  // true = clear answer
+                    this.previousQuestion(true);
                 } else {
                     await this.speak("This is the first question.");
                     this.showQuestion();
@@ -1926,29 +1933,44 @@ class CFillApp {
 
     // Format currency for natural speech (e.g., 350000 -> "three hundred fifty thousand dollars")
     formatCurrencyForSpeech(amount) {
+        // Convert number to words for natural speech
+        const numberToWords = (n) => {
+            if (n === 0) return "";
+            const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+                         "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+            const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+            if (n < 20) return ones[n];
+            if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? " " + ones[n%10] : "");
+            if (n < 1000) return ones[Math.floor(n/100)] + " hundred" + (n%100 ? " " + numberToWords(n%100) : "");
+            return n.toString();
+        };
+        
         if (amount >= 1000000) {
             const millions = Math.floor(amount / 1000000);
             const remainder = amount % 1000000;
+            const millionWords = numberToWords(millions);
             if (remainder === 0) {
-                return `${millions} million dollars`;
+                return millionWords + " million dollars";
             } else if (remainder >= 1000) {
                 const thousands = Math.floor(remainder / 1000);
-                return `${millions} million ${thousands} thousand dollars`;
+                return millionWords + " million " + numberToWords(thousands) + " thousand dollars";
             } else {
-                return `${millions} million ${remainder} dollars`;
+                return millionWords + " million " + numberToWords(remainder) + " dollars";
             }
         } else if (amount >= 1000) {
             const thousands = Math.floor(amount / 1000);
             const remainder = amount % 1000;
+            const thousandWords = numberToWords(thousands);
             if (remainder === 0) {
-                return `${thousands} thousand dollars`;
+                return thousandWords + " thousand dollars";
             } else {
-                return `${thousands} thousand ${remainder} dollars`;
+                return thousandWords + " thousand " + numberToWords(remainder) + " dollars";
             }
         } else {
-            return `${amount} dollars`;
+            return numberToWords(amount) + " dollars";
         }
     }
+
 
     previousQuestion(clearAnswer = false) {
         if (this.currentIndex > 0) {
