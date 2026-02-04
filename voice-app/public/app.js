@@ -1714,7 +1714,7 @@ class CFillApp {
     checkForCommand(text) {
         const commands = {
             'go_back': [
-                'go back', 'previous', 'back', 'last question', 'previous question',
+                'go back', 'go rock', 'rock', 'previous', 'back', 'last question', 'previous question',
                 'fix that', 'fix my answer', 'change that', 'change my answer',
                 'wrong', 'that was wrong', 'not right', 'incorrect', 'redo',
                 'let me fix', 'i need to fix', 'wait', 'hold on'
@@ -2184,7 +2184,7 @@ class CFillApp {
             'property_address': ['address', 'property', 'location', 'street'],
             'purchase_price': ['price', 'purchase', 'amount', 'cost', 'how much'],
             'property_type': ['property type', 'type of property', 'home type', 'house type'],
-            'purchase_method': ['payment', 'financing', 'pay', 'cash', 'loan'],
+            'purchase_method': ['payment', 'financing', 'pay', 'cash', 'loan', 'new financing', 'getting financing', 'getting a loan', 'bank loan', 'lender', 'get alone', 'alone', 'mortgage', 'loan assumption', 'assuming', 'assume the loan', 'take over'],
             'loan_type': ['loan type', 'mortgage', 'va', 'fha', 'conventional'],
             'usda_loan_type': ['usda', 'rural'],
             'dual_agency': ['dual agency', 'same agent'],

@@ -1,0 +1,143 @@
+{
+  "timestamp": "2026-01-22T23:23:56.445Z",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "passRate": "100.0%"
+  },
+  "details": [
+    {
+      "name": "Clean data - valid contract",
+      "status": "PASSED",
+      "details": "No errors (0 warnings OK)",
+      "duration": 8374,
+      "transcriptions": {
+        "buyer_1_name": "John Michael Smith",
+        "property_address": "57 Oak Street, Springdale, Arkansas 72762",
+        "purchase_price": "$350,000",
+        "closing_date": "03/15/2026",
+        "contract_expiration": "02/01/2026 at 5PM"
+      },
+      "reviewIssues": []
+    },
+    {
+      "name": "Bad time - should catch 25:00",
+      "status": "PASSED",
+      "details": "Found expected issue for \"contract_expiration\"",
+      "duration": 13214,
+      "transcriptions": {
+        "buyer_1_name": "Sarah Johnson",
+        "property_address": "23 Main Street, Rogers, Arkansas 72756",
+        "purchase_price": "$100,000",
+        "closing_date": "04/30/2026",
+        "contract_expiration": "January 25 at 25 PM"
+      },
+      "reviewIssues": [
+        {
+          "field": "contract_expiration_time",
+          "type": "time",
+          "severity": "error",
+          "description": "Invalid time \"25 PM\" - hours must be 1-12, not 25",
+          "suggestion": "Change to \"5:00 PM\" (likely transcription error where \"25\" from \"January 25\" was mistakenly included with the time)"
+        },
+        {
+          "field": "contract_expiration",
+          "type": "time",
+          "severity": "error",
+          "description": "Invalid time format \"January 25 at 25 PM\" contains impossible hour of 25",
+          "suggestion": "Change to \"January 25 at 5:00 PM\""
+        },
+        {
+          "field": "contract_expiration_date",
+          "type": "date_logic",
+          "severity": "warning",
+          "description": "Contract expiration date \"January 25\" is missing the year - unclear if this is January 25, 2025 or 2026",
+          "suggestion": "Specify the complete date with year (e.g., \"January 25, 2025\")"
+        }
+      ]
+    },
+    {
+      "name": "Duplicate words - Rogers Rogers",
+      "status": "PASSED",
+      "details": "Found expected issue for \"property_address\"",
+      "duration": 11893,
+      "transcriptions": {
+        "buyer_1_name": "Mike Thompson",
+        "property_address": "789 Maple Avenue, Rogers Rogers, Arkansas 72756",
+        "purchase_price": "$250,000",
+        "closing_date": "05/01/2026",
+        "contract_expiration": "March 1 at noon"
+      },
+      "reviewIssues": [
+        {
+          "field": "property_address",
+          "type": "other",
+          "severity": "error",
+          "description": "Duplicate consecutive words detected - \"Rogers Rogers\" appears in the address, which is a common voice transcription error where words get repeated",
+          "suggestion": "Change \"789 Maple Avenue, Rogers Rogers, Arkansas 72756\" to \"789 Maple Avenue, Rogers, Arkansas 72756\""
+        },
+        {
+          "field": "contract_expiration",
+          "type": "date_logic",
+          "severity": "warning",
+          "description": "Contract expiration date \"March 1\" does not specify a year, making it ambiguous",
+          "suggestion": "Specify the year, such as \"March 1, 2025\" to avoid confusion"
+        }
+      ]
+    },
+    {
+      "name": "Number homophone - Deepgram handles correctly",
+      "status": "PASSED",
+      "details": "No errors (0 warnings OK)",
+      "duration": 9642,
+      "transcriptions": {
+        "buyer_1_name": "Jennifer Williams",
+        "property_address": "456 Pine Road, Fayetteville, Arkansas 72701",
+        "purchase_price": "$500,000",
+        "closing_date": "06/15/2026",
+        "contract_expiration": "05/01/2026 at 3PM",
+        "other_terms": "Seller agrees to pay for all repairs"
+      },
+      "reviewIssues": []
+    },
+    {
+      "name": "Missing zip code",
+      "status": "PASSED",
+      "details": "Found expected issue for \"property_address\"",
+      "duration": 10604,
+      "transcriptions": {
+        "buyer_1_name": "Robert Davis",
+        "property_address": "321 Cedar Lane, Bella Vista, Arkansas",
+        "purchase_price": "$300,000",
+        "closing_date": "07/01/2026",
+        "contract_expiration": "May 15 at 4PM"
+      },
+      "reviewIssues": [
+        {
+          "field": "property_address",
+          "type": "address",
+          "severity": "warning",
+          "description": "Property address is missing zip code - only has street, city, and state",
+          "suggestion": "Add a 5-digit zip code (e.g., \"321 Cedar Lane, Bella Vista, Arkansas 72714\")"
+        },
+        {
+          "field": "contract_expiration_date",
+          "type": "date_logic",
+          "severity": "warning",
+          "description": "Contract expiration date \"May 15\" has no year specified, making it ambiguous",
+          "suggestion": "Specify the year (e.g., \"May 15, 2025\")"
+        },
+        {
+          "field": "contract_expiration",
+          "type": "date_logic",
+          "severity": "warning",
+          "description": "Contract expiration \"May 15 at 4PM\" lacks year specification",
+          "suggestion": "Include the year for clarity (e.g., \"May 15, 2025 at 4PM\")"
+        }
+      ]
+    }
+  ]
+}

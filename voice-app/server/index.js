@@ -40,6 +40,17 @@ if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
 // API keys - set in .env file
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || '';
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+
+// OpenAI Realtime handler for high-stakes questions
+const { OpenAIRealtimeHandler } = require('./openai-realtime');
+let realtimeHandler = null;
+if (OPENAI_API_KEY) {
+    realtimeHandler = new OpenAIRealtimeHandler(OPENAI_API_KEY);
+    console.log('  OPENAI_API_KEY:', 'SET (' + OPENAI_API_KEY.substring(0, 8) + '...) - Realtime enabled');
+} else {
+    console.log('  OPENAI_API_KEY: NOT SET - Realtime disabled');
+}
 
 if (!DEEPGRAM_API_KEY) {
     console.warn('WARNING: DEEPGRAM_API_KEY not set in .env file');
@@ -94,10 +105,11 @@ app.post('/api/speak', async (req, res) => {
                 text: text,
                 model_id: 'eleven_flash_v2_5',  // Fast model - 75ms latency
                 voice_settings: {
-                    stability: 0.5,
+                    stability: 0.6,
                     similarity_boost: 0.75,
                     style: 0.3,  // Slight expressiveness
-                    use_speaker_boost: true
+                    use_speaker_boost: true,
+                    speed: 0.85  // Slow down speech slightly (1.0 = normal, 0.85 = 15% slower)
                 },
                 optimize_streaming_latency: 3  // 0-4, higher = faster
             })

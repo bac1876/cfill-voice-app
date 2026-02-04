@@ -1,0 +1,255 @@
+{
+  "timestamp": "2026-01-22T22:39:01.965Z",
+  "summary": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "passRate": "100.0%"
+  },
+  "byCategory": {
+    "CRITICAL": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "DATE": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "WARNING": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "VALID": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    }
+  },
+  "details": [
+    {
+      "name": "Invalid time 25:00",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Invalid time format \"25:00\" - hours must be 1-12, not 13-59. This appears to be a voice transcription error where \"25\" from a date (like \"January 25th\") got combined with \":00\" when the user likely said \"5:00\".",
+      "duration": 4478,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: contract_expiration_time\nTYPE: time\nSEVERITY: error\nDESCRIPTION: Invalid time format \"25:00\" - hours must be 1-12, not 13-59. This appears to be a voice transcription error w"
+    },
+    {
+      "name": "Invalid time 13:00",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Invalid time format \"13:00\" - hours must be 1-12, not 13-24 format, especially when paired with \"PM\"",
+      "duration": 3265,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: contract_expiration_time\nTYPE: time\nSEVERITY: error\nDESCRIPTION: Invalid time format \"13:00\" - hours must be 1-12, not 13-24 format, especially when paired with \"PM\"\nSUGGESTI"
+    },
+    {
+      "name": "Duplicate words in address",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Duplicate consecutive words \"Rogers Rogers\" - voice input transcription error where \"Rogers\" was repeated twice",
+      "duration": 3038,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: property_address\nTYPE: other\nSEVERITY: error\nDESCRIPTION: Duplicate consecutive words \"Rogers Rogers\" - voice input transcription error where \"Rogers\" was repeated twice\nSUGG"
+    },
+    {
+      "name": "Duplicate words - Arkansas Arkansas",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Duplicate consecutive word \"Arkansas Arkansas\" - voice input transcription error where \"Arkansas\" appears twice in a row",
+      "duration": 2933,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: property_address\nTYPE: spelling\nSEVERITY: error\nDESCRIPTION: Duplicate consecutive word \"Arkansas Arkansas\" - voice input transcription error where \"Arkansas\" appears twice i"
+    },
+    {
+      "name": "Duplicate words in buyer name",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Duplicate consecutive words detected - \"John John Smith\" contains \"John\" repeated twice in a row, which is a common voice transcription error",
+      "duration": 3084,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: buyer_1_name\nTYPE: other\nSEVERITY: error\nDESCRIPTION: Duplicate consecutive words detected - \"John John Smith\" contains \"John\" repeated twice in a row, which is a common voic"
+    },
+    {
+      "name": "Missing buyer name",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Buyer name is completely missing - this is a required field for any real estate contract",
+      "duration": 5977,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: buyer_1_name\nTYPE: missing\nSEVERITY: error\nDESCRIPTION: Buyer name is completely missing - this is a required field for any real estate contract\nSUGGESTION: Enter the buyer's"
+    },
+    {
+      "name": "Missing property address",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Property address is completely missing - this is a required field for any real estate contract",
+      "duration": 6010,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: property_address\nTYPE: missing\nSEVERITY: error\nDESCRIPTION: Property address is completely missing - this is a required field for any real estate contract\nSUGGESTION: Propert"
+    },
+    {
+      "name": "Missing purchase price",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Purchase price is a required field but is empty",
+      "duration": 4415,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: purchase_price\nTYPE: missing\nSEVERITY: error\nDESCRIPTION: Purchase price is a required field but is empty\nSUGGESTION: Enter the purchase price amount for the property\n\nISSUE:"
+    },
+    {
+      "name": "Cellar instead of Seller",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: \"Cellar\" should be \"Seller\" - this is a critical homophone error in contracts where voice input transcribed \"Seller\" as \"Cellar\"",
+      "duration": 2886,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: other_terms\nTYPE: spelling\nSEVERITY: error\nDESCRIPTION: \"Cellar\" should be \"Seller\" - this is a critical homophone error in contracts where voice input transcribed \"Seller\" a"
+    },
+    {
+      "name": "Number 2 instead of word to",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Number \"2\" is used instead of the word \"to\" in \"Seller agrees 2 pay for repairs\"",
+      "duration": 2774,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: other_terms\nTYPE: other\nSEVERITY: error\nDESCRIPTION: Number \"2\" is used instead of the word \"to\" in \"Seller agrees 2 pay for repairs\"\nSUGGESTION: Change to \"Seller agrees to "
+    },
+    {
+      "name": "Number 4 instead of word for",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Number \"4\" used instead of word \"for\" in contract text - \"Seller will pay 4 the repairs\" should be \"Seller will pay for the repairs\"",
+      "duration": 3490,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: other_terms\nTYPE: other\nSEVERITY: error\nDESCRIPTION: Number \"4\" used instead of word \"for\" in contract text - \"Seller will pay 4 the repairs\" should be \"Seller will pay for t"
+    },
+    {
+      "name": "Closing costs exceed purchase price",
+      "category": "CRITICAL",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Closing costs of $500,000 exceeds the purchase price of $300,000, which is impossible",
+      "duration": 3688,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: closing_costs_amount\nTYPE: number\nSEVERITY: error\nDESCRIPTION: Closing costs of $500,000 exceeds the purchase price of $300,000, which is impossible\nSUGGESTION: Verify the cl"
+    },
+    {
+      "name": "Invalid month 13",
+      "category": "DATE",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Invalid date \"13/15/2026\" - month 13 does not exist and day 15 is impossible for a non-existent month",
+      "duration": 3755,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: closing_date\nTYPE: date_logic\nSEVERITY: error\nDESCRIPTION: Invalid date \"13/15/2026\" - month 13 does not exist and day 15 is impossible for a non-existent month\nSUGGESTION: C"
+    },
+    {
+      "name": "February 31st (impossible date)",
+      "category": "DATE",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: February 31, 2026 is an invalid date - February only has 28 days (29 in leap years)",
+      "duration": 3778,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: closing_date\nTYPE: date_logic\nSEVERITY: error\nDESCRIPTION: February 31, 2026 is an invalid date - February only has 28 days (29 in leap years)\nSUGGESTION: Change to a valid d"
+    },
+    {
+      "name": "January 45th (day out of range)",
+      "category": "DATE",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Invalid date \"January 45, 2026\" - January only has 31 days, so \"January 45\" is impossible",
+      "duration": 4914,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: contingency_date\nTYPE: date_logic\nSEVERITY: error\nDESCRIPTION: Invalid date \"January 45, 2026\" - January only has 31 days, so \"January 45\" is impossible\nSUGGESTION: Correct t"
+    },
+    {
+      "name": "Closing date in the past",
+      "category": "DATE",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Closing date is January 1, 2020, which is in the past. Real estate closings must be scheduled for future dates.",
+      "duration": 4848,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: closing_date\nTYPE: date_logic\nSEVERITY: error\nDESCRIPTION: Closing date is January 1, 2020, which is in the past. Real estate closings must be scheduled for future dates.\nSUG"
+    },
+    {
+      "name": "Garbled date transcription",
+      "category": "DATE",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Date appears to be voice transcription error - \"Marsh fifteenth twenty twenty sex\" should be \"March fifteenth twenty twenty six\" (March 15, 2026)",
+      "duration": 6424,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: closing_date\nTYPE: other\nSEVERITY: error\nDESCRIPTION: Date appears to be voice transcription error - \"Marsh fifteenth twenty twenty sex\" should be \"March fifteenth twenty twe"
+    },
+    {
+      "name": "Missing zip code in address",
+      "category": "WARNING",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Property address is missing zip code",
+      "duration": 2530,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: property_address\nTYPE: address\nSEVERITY: warning\nDESCRIPTION: Property address is missing zip code\nSUGGESTION: Add a 5-digit zip code to complete the address (e.g., \"457 Oak "
+    },
+    {
+      "name": "Spoken numbers in address",
+      "category": "WARNING",
+      "status": "PASSED",
+      "expectIssue": true,
+      "details": "Found issue: Address contains spoken numbers \"seven two seven six two\" instead of the proper zip code digits",
+      "duration": 3106,
+      "rawResponse": "ISSUES_FOUND: yes\n\nISSUE: property_address\nTYPE: address\nSEVERITY: error\nDESCRIPTION: Address contains spoken numbers \"seven two seven six two\" instead of the proper zip code digits\nSUGGESTION: Change"
+    },
+    {
+      "name": "Valid complete contract",
+      "category": "VALID",
+      "status": "PASSED",
+      "expectIssue": false,
+      "details": "No errors (0 warnings OK)",
+      "duration": 1853,
+      "rawResponse": "ISSUES_FOUND: no\n\nSUMMARY: No issues found."
+    },
+    {
+      "name": "Valid time 5:00 PM",
+      "category": "VALID",
+      "status": "PASSED",
+      "expectIssue": false,
+      "details": "No errors (0 warnings OK)",
+      "duration": 2613,
+      "rawResponse": "ISSUES_FOUND: no\n\nSUMMARY: No issues found - all contract fields contain valid data with proper formatting, realistic values, and complete information."
+    },
+    {
+      "name": "Valid address with zip",
+      "category": "VALID",
+      "status": "PASSED",
+      "expectIssue": false,
+      "details": "No errors (0 warnings OK)",
+      "duration": 1886,
+      "rawResponse": "ISSUES_FOUND: no\n\nSUMMARY: No issues found."
+    },
+    {
+      "name": "Valid date format",
+      "category": "VALID",
+      "status": "PASSED",
+      "expectIssue": false,
+      "details": "No errors (0 warnings OK)",
+      "duration": 2122,
+      "rawResponse": "ISSUES_FOUND: no\n\nSUMMARY: No issues found."
+    },
+    {
+      "name": "Valid use of word \"to\"",
+      "category": "VALID",
+      "status": "PASSED",
+      "expectIssue": false,
+      "details": "No errors (0 warnings OK)",
+      "duration": 1913,
+      "rawResponse": "ISSUES_FOUND: no\n\nSUMMARY: No issues found."
+    }
+  ]
+}
