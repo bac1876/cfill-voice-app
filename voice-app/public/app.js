@@ -765,6 +765,12 @@ class CFillApp {
     }
 
     async processTranscript(transcript) {
+        // REJECT SHORT/GARBAGE TRANSCRIPTS (noise, single digits like "2")
+        if (!transcript || transcript.trim().length < 2 || /^\d+$/.test(transcript.trim())) {
+            console.log("Rejected garbage transcript:", transcript);
+            return;
+        }
+
         // ECHO PROTECTION: Ignore transcripts while TTS is speaking
         // This prevents the mic from picking up the robot voice and processing it
         if (this.isSpeaking) {
