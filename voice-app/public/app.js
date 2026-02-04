@@ -766,7 +766,7 @@ class CFillApp {
 
     async processTranscript(transcript) {
         // REJECT SHORT/GARBAGE TRANSCRIPTS (noise, single digits like "2")
-        if (!transcript || transcript.trim().length < 2 || /^\d+$/.test(transcript.trim())) {
+        if (!transcript || transcript.trim().length < 2 || /^(two|to|too|for|four|one|won|\d+|[a-z])$/i.test(transcript.trim())) {
             console.log("Rejected garbage transcript:", transcript);
             return;
         }
@@ -969,7 +969,7 @@ class CFillApp {
             // Text answer - check for spelling first (especially for names)
             
             // VALIDATION: Reject answers that are too short or just numbers (likely noise)
-            if (transcript.length < 2 || /^\d+$/.test(transcript.trim())) {
+            if (transcript.length < 2 || /^(two|to|too|for|four|one|won|\d+|[a-z])$/i.test(transcript.trim())) {
                 console.log(`Rejected short/numeric transcript: "${transcript}"`);
                 this.speak("Sorry, I didn't catch that. Please say your answer again.");
                 this.currentTranscript = '';
