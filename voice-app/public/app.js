@@ -954,6 +954,17 @@ class CFillApp {
 
         } else {
             // Text answer - check for spelling first (especially for names)
+            
+            // VALIDATION: Reject answers that are too short or just numbers (likely noise)
+            if (transcript.length < 2 || /^\d+$/.test(transcript.trim())) {
+                console.log(`Rejected short/numeric transcript: "${transcript}"`);
+                this.speak("Sorry, I didn't catch that. Please say your answer again.");
+                this.currentTranscript = '';
+                if (this.conversationMode && !this.isRecording) {
+                    this.startRecording();
+                }
+                return;
+            }
             let finalText = transcript;
 
             // Check if user is spelling out a name
