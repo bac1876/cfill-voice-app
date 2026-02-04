@@ -26,6 +26,9 @@ class CFillApp {
         // Review choice mode - listening for "review" or "fill" after questions complete
         this.reviewChoiceMode = false;
 
+        // Section tracking for transitions
+        this.lastSection = null;
+
         this.init();
     }
 
@@ -2000,7 +2003,7 @@ class CFillApp {
                     // Apply the AI correction
                     this.answers[issue.field].value = issue.corrected;
                     this.answers[issue.field].display = issue.corrected;
-                    console.log(`Auto-corrected ${issue.field}: "${this.correctedFields[issue.field].original}" Ã¢â€ â€™ "${issue.corrected}"`);
+                    console.log(`Auto-corrected ${issue.field}: "${this.correctedFields[issue.field].original}" ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ "${issue.corrected}"`);
                 }
             }
         }
@@ -2050,6 +2053,9 @@ class CFillApp {
             // User wants to fill directly
             console.log('Review choice: FILL');
             this.reviewChoiceMode = false;
+
+        // Section tracking for transitions
+        this.lastSection = null;
             this.speak("Filling your contract now.");
             this.proceedToFill();
             return true;
@@ -2057,6 +2063,9 @@ class CFillApp {
             // User wants to review answers
             console.log('Review choice: REVIEW');
             this.reviewChoiceMode = false;
+
+        // Section tracking for transitions
+        this.lastSection = null;
             this.speak("Here are your answers.");
             this.showAnswersList();
             return true;
@@ -2111,6 +2120,9 @@ class CFillApp {
     startReviewNavigation() {
         this.reviewNavigationMode = true;
         this.reviewChoiceMode = false;
+
+        // Section tracking for transitions
+        this.lastSection = null;
         this.currentTranscript = '';
         this.startRecording();
         console.log('Review navigation mode started - listening for fix commands');
@@ -2467,6 +2479,9 @@ class CFillApp {
         this.correctedFields = {};
         this.originalAnswers = {};
         this.reviewChoiceMode = false;
+
+        // Section tracking for transitions
+        this.lastSection = null;
         this.showScreen('start');
     }
 
