@@ -176,6 +176,10 @@ class CFillApp {
 
     async loadQuestions() {
         try {
+            // Disable start button while loading
+            const startBtn = document.getElementById("start-btn");
+            if (startBtn) { startBtn.disabled = true; startBtn.textContent = "Loading..."; }
+
             const response = await fetch('/api/questions');
             const data = await response.json();
             this.questions = data.questions;
@@ -184,6 +188,10 @@ class CFillApp {
             const questionCountEl = document.getElementById('question-count');
             if (questionCountEl) {
                 questionCountEl.textContent = `${this.questions.length} questions`;
+            
+            // Re-enable start button
+            if (startBtn) { startBtn.disabled = false; startBtn.textContent = "Start Contract Fill"; }
+            console.log("Questions loaded and UI updated:", this.questions.length);
             }
         } catch (error) {
             console.error('Failed to load questions:', error);
