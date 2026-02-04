@@ -439,7 +439,7 @@ class CFillApp {
         });
     }
 
-    selectChoice(question, option) {
+    async selectChoice(question, option) {
         // Update UI
         const buttons = this.choiceOptions.querySelectorAll('.choice-btn');
         buttons.forEach(btn => btn.classList.remove('selected'));
