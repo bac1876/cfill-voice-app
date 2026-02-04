@@ -101,6 +101,23 @@ class CFillApp {
         return confirmations[Math.floor(Math.random() * confirmations.length)];
     }
 
+    // Smart acknowledgment - echo back important values, just confirm names/text
+    getSmartAcknowledgment(questionType, displayValue) {
+        const base = this.getConfirmation();
+        
+        // For currency and dates, echo back the value for verification
+        if (questionType === 'currency') {
+            // Extract number and format for speech
+            const num = parseInt(displayValue.replace(/[^0-9]/g, ''));
+            return `${base} ${this.formatCurrencyForSpeech(num)}.`;
+        } else if (questionType === 'date' || questionType === 'datetime') {
+            return `${base} ${displayValue}.`;
+        }
+        
+        // For names, addresses, text - just confirm without repeating
+        return base;
+    }
+
     async init() {
         console.log('CFillApp initializing...');
 
@@ -471,11 +488,13 @@ class CFillApp {
             return;
         }
 
-        // In conversation mode: quick confirmation then auto-advance
+        // In conversation mode: smart confirmation then auto-advance
         if (this.conversationMode && autoAdvance) {
-            await this.speak(this.getConfirmation());
+            // Get current question type for smart acknowledgment
+            const currentQ = this.questions[this.currentIndex];
+            const qType = currentQ ? currentQ.type : 'text';
+            await this.speak(this.getSmartAcknowledgment(qType, text));
             // Add a small delay before advancing to let user see the confirmed answer
-            // This helps especially with conditional questions that follow
             await new Promise(resolve => setTimeout(resolve, 300));
             // Auto-advance to next question
             this.nextQuestion();
@@ -1981,7 +2000,7 @@ class CFillApp {
                     // Apply the AI correction
                     this.answers[issue.field].value = issue.corrected;
                     this.answers[issue.field].display = issue.corrected;
-                    console.log(`Auto-corrected ${issue.field}: "${this.correctedFields[issue.field].original}" → "${issue.corrected}"`);
+                    console.log(`Auto-corrected ${issue.field}: "${this.correctedFields[issue.field].original}" Ã¢â€ â€™ "${issue.corrected}"`);
                 }
             }
         }
