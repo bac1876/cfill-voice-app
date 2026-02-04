@@ -480,8 +480,8 @@ class CFillApp {
             // Auto-advance to next question
             this.nextQuestion();
         } else {
-            // Manual mode: full confirmation
-            await this.speak(`${this.getConfirmation()} ${text}.`);
+            // autoAdvance=false means caller handles speech (e.g., currency readback)
+            // Do nothing here - just visual update was already done above
         }
     }
 
