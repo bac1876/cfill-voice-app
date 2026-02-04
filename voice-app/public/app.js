@@ -404,7 +404,7 @@ class CFillApp {
         // Show previous answer if exists
         const existingAnswer = this.answers[question.id];
         if (existingAnswer) {
-            this.showAnswer(existingAnswer.display);
+            await this.showAnswer(existingAnswer.display);
             this.nextBtn.disabled = false;
         } else {
             this.answerDisplay.classList.add('hidden');
@@ -453,7 +453,7 @@ class CFillApp {
             fieldName: option.fieldName
         };
 
-        this.showAnswer(option.label);
+        await this.showAnswer(option.label);
         this.nextBtn.disabled = false;
     }
 
@@ -936,7 +936,7 @@ class CFillApp {
                     time: parsed.time,
                     ampm: parsed.ampm
                 };
-                this.showAnswer(parsed.display);
+                await this.showAnswer(parsed.display);
                 this.nextBtn.disabled = false;
             } else {
                 this.showToast('I need a date and time, like January 25th at 5pm.', false);
@@ -955,7 +955,7 @@ class CFillApp {
                     display: parsed.display,
                     fieldName: question.fieldName
                 };
-                this.showAnswer(parsed.display);
+                await this.showAnswer(parsed.display);
                 this.nextBtn.disabled = false;
             } else {
                 this.showToast('I need a date for this one.', false);
@@ -1034,7 +1034,7 @@ class CFillApp {
                         display: fullAddress,
                         fieldName: question.fieldName
                     };
-                    this.showAnswer(fullAddress);
+                    await this.showAnswer(fullAddress);
                     this.nextBtn.disabled = false;
                     return;
                 }
@@ -1045,7 +1045,7 @@ class CFillApp {
                 display: cleanedText,
                 fieldName: question.fieldName
             };
-            this.showAnswer(cleanedText);
+            await this.showAnswer(cleanedText);
             this.nextBtn.disabled = false;
         }
     }
